@@ -4,7 +4,7 @@
 PlayerSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 28
-  productGUID: bf9c71bfd9e4db24b802d78351481e4d
+  productGUID: a8f369947709f734aa85a09b8e84639c
   AndroidProfiler: 0
   AndroidFilterTouchesWhenObscured: 0
   AndroidEnableSustainedPerformanceMode: 0
@@ -888,7 +888,7 @@ PlayerSettings:
   cloudProjectId: 3514f802-5bdf-40f8-b72a-077d083589ec
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: FPS Game 2025-02-05_12-12-01
+  projectName: 
   organizationId: wlghd5524
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0

@@ -8,12 +8,12 @@ TagManager:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Player
   - Water
   - UI
-  - Player
-  - PlayerKCC
-  - FirstPersonView
+  - 
+  - 
+  - 
   - 
   - 
   - 
@@ -43,4 +43,10 @@ TagManager:
     locked: 0
   m_RenderingLayers:
   - Default
-  - IgnoreDecal
+  - Light Layer 1 - IgnoreDecal
+  - Light Layer 2
+  - Light Layer 3
+  - Light Layer 4
+  - Light Layer 5
+  - Light Layer 6
+  - Light Layer 7

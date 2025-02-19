@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 public class ZombieController : MonoBehaviour
 {
@@ -7,7 +8,7 @@ public class ZombieController : MonoBehaviour
     Animator animator;
     public float rotationSpeed = 5f; // 회전 속도
     float speed = 0.5f;
-    bool check = false;
+    bool check = false;             //플레이어와의 거리
 
     private void Start()
     {
@@ -28,8 +29,8 @@ public class ZombieController : MonoBehaviour
         {
             check = true;
             // 플레이어 방향으로 이동
-            transform.position = Vector3.MoveTowards(transform.position, player.transform.position, speed * Time.deltaTime);
-
+            //transform.position = Vector3.MoveTowards(transform.position, player.transform.position, speed * Time.deltaTime);
+            GetComponent<NavMeshAgent>().SetDestination(player.transform.position);
             // 자연스럽게 플레이어 바라보기
             Vector3 direction = (player.transform.position - transform.position).normalized;
             Quaternion lookRotation = Quaternion.LookRotation(direction);

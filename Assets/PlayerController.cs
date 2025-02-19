@@ -7,6 +7,12 @@ public class PlayerController : MonoBehaviour
     [Tooltip("플레이어 이동 속도")]
     public float moveSpeed = 5f;
 
+    [Header("Jump Settings")]
+    [Tooltip("점프 힘 (양수 값)")]
+    public float jumpForce = 50f;
+    [Tooltip("바닥 판정을 위한 레이캐스트 거리")]
+    public float groundCheckDistance = 0.2f;
+
     [Header("Look Settings")]
     [Tooltip("마우스 감도")]
     public float lookSensitivity = 1f;
@@ -35,11 +41,10 @@ public class PlayerController : MonoBehaviour
         Cursor.visible = false;
     }
 
-    // Player Input 컴포넌트가 Send Messages 모드로 입력 이벤트를 호출할 때 실행되는 메서드들
+    // Player Input 컴포넌트가 Send Messages 혹은 Unity Events로 호출할 때 실행되는 메서드들
 
     /// <summary>
     /// "Move" 액션에 연결된 입력 이벤트
-    /// Input Action Asset에서 액션 이름이 "Move"여야 자동으로 호출됩니다.
     /// </summary>
     public void OnMove(InputAction.CallbackContext context)
     {
@@ -51,7 +56,6 @@ public class PlayerController : MonoBehaviour
 
     /// <summary>
     /// "Look" 액션에 연결된 입력 이벤트
-    /// Input Action Asset에서 액션 이름이 "Look"이어야 자동으로 호출됩니다.
     /// </summary>
     public void OnLook(InputAction.CallbackContext context)
     {
@@ -61,7 +65,19 @@ public class PlayerController : MonoBehaviour
             lookInput = Vector2.zero;
     }
 
-    // 물리 기반 이동 처리는 FixedUpdate에서 실행합니다.
+    /// <summary>
+    /// "Jump" 액션에 연결된 입력 이벤트
+    /// </summary>
+    public void OnJump(InputAction.CallbackContext context)
+    {
+        // 점프 입력이 performed 상태이고, 바닥에 닿아 있을 때만 점프 처리
+        if (context.performed && IsGrounded())
+        {
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        }
+    }
+
+    // 물리 기반 이동 및 중력 처리는 FixedUpdate에서 실행합니다.
     private void FixedUpdate()
     {
         HandleMovement();
@@ -74,16 +90,14 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// 입력된 이동 값에 따라 Rigidbody.MovePosition을 이용하여 이동 처리
+    /// 입력된 이동 값과 수직 속도를 반영하여 이동 처리
     /// </summary>
     private void HandleMovement()
     {
-        // 플레이어의 오른쪽과 앞쪽 벡터를 기준으로 이동 방향 계산
+        // 플레이어의 오른쪽과 앞쪽 벡터를 기준으로 수평 이동 방향 계산
         Vector3 moveDirection = (transform.right * moveInput.x + transform.forward * moveInput.y).normalized;
-        // 이동 벡터 계산 (Time.fixedDeltaTime을 곱해 프레임 간 이동 거리 조절)
-        Vector3 movement = moveDirection * moveSpeed * Time.fixedDeltaTime;
-        // Rigidbody.MovePosition을 통해 충돌 처리와 함께 이동
-        rb.MovePosition(rb.position + movement);
+        Vector3 horizontalMovement = moveDirection * moveSpeed * Time.fixedDeltaTime;
+        rb.MovePosition(rb.position + horizontalMovement);
     }
 
     /// <summary>
@@ -94,7 +108,7 @@ public class PlayerController : MonoBehaviour
         // 좌우 회전: 플레이어 GameObject 자체를 Y축 기준으로 회전
         transform.Rotate(Vector3.up, lookInput.x * lookSensitivity);
 
-        // 상하 회전: 누적 회전값을 기반으로 카메라의 피치(pitch)를 조절
+        // 상하 회전: 누적 회전값을 기반으로 카메라의 피치(pitch) 조절
         verticalRotation -= lookInput.y * lookSensitivity;
         verticalRotation = Mathf.Clamp(verticalRotation, -verticalRotationLimit, verticalRotationLimit);
 
@@ -102,5 +116,13 @@ public class PlayerController : MonoBehaviour
         {
             cameraTransform.localRotation = Quaternion.Euler(verticalRotation, 0f, 0f);
         }
+    }
+
+    /// <summary>
+    /// 바닥 판정을 위해 플레이어 아래로 레이캐스트를 실행
+    /// </summary>
+    private bool IsGrounded()
+    {
+        return Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, groundCheckDistance);
     }
 }

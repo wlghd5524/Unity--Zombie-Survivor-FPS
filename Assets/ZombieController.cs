@@ -4,17 +4,19 @@ using UnityEngine.AI;
 public class ZombieController : MonoBehaviour
 {
     PlayerController player = null;
-    float distance;
-    Animator animator;
+    public float distance;
+    private Animator animator;
+    private NavMeshAgent agent;
     public float rotationSpeed = 5f; // 회전 속도
-    float speed = 0.5f;
-    bool check = false;             //플레이어와의 거리
+    public float speed = 0.5f;
+    private bool check = false;             //플레이어와의 거리
 
     private void Start()
     {
         //플레이어 찾기
         player = GameObject.Find("Player Character").GetComponent<PlayerController>();
         animator = GetComponent<Animator>();
+        agent = GetComponent<NavMeshAgent>();
     }
 
     void Update()
@@ -28,14 +30,11 @@ public class ZombieController : MonoBehaviour
         if (distance > 2.0f)
         {
             check = true;
-            // 플레이어 방향으로 이동
-            //transform.position = Vector3.MoveTowards(transform.position, player.transform.position, speed * Time.deltaTime);
-            GetComponent<NavMeshAgent>().SetDestination(player.transform.position);
             // 자연스럽게 플레이어 바라보기
             Vector3 direction = (player.transform.position - transform.position).normalized;
             Quaternion lookRotation = Quaternion.LookRotation(direction);
             transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, rotationSpeed * Time.deltaTime);
-
+            agent.SetDestination(player.transform.position);
         }
 
         else
@@ -46,7 +45,7 @@ public class ZombieController : MonoBehaviour
 
     void Animation()
     {
-        if(animator == null) return;
+        if (animator == null) return;
 
         if (check == false)
             animator.Play("Z_Attack");

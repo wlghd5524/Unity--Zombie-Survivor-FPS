@@ -29,12 +29,16 @@ public class PlayerController : MonoBehaviour
     private float verticalRotation = 0f;
 
     private Rigidbody rb;
+    private Animator animator;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
         // Rigidbody가 외부 힘에 의한 회전을 자동으로 적용하지 않도록 회전 축을 동결합니다.
         rb.freezeRotation = true;
+
+        animator = GetComponent<Animator>();
+        animator.SetFloat("WeaponID", 1f);
 
         // 게임 시작 시 커서 숨김 및 잠금
         Cursor.lockState = CursorLockMode.Locked;
@@ -74,6 +78,8 @@ public class PlayerController : MonoBehaviour
         if (context.performed && IsGrounded())
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            animator.SetTrigger("Jump");
+            
         }
     }
 
@@ -81,6 +87,7 @@ public class PlayerController : MonoBehaviour
     private void FixedUpdate()
     {
         HandleMovement();
+        UpdateAnimation();
     }
 
     // 회전(시점) 처리는 Update에서 실행합니다.
@@ -98,6 +105,10 @@ public class PlayerController : MonoBehaviour
         Vector3 moveDirection = (transform.right * moveInput.x + transform.forward * moveInput.y).normalized;
         Vector3 horizontalMovement = moveDirection * moveSpeed * Time.fixedDeltaTime;
         rb.MovePosition(rb.position + horizontalMovement);
+
+        animator.SetFloat("MoveX", moveDirection.x, 0.05f, Time.deltaTime);
+        animator.SetFloat("MoveZ", moveDirection.z, 0.05f, Time.deltaTime);
+        animator.SetFloat("MoveSpeed", moveSpeed);
     }
 
     /// <summary>
@@ -116,6 +127,15 @@ public class PlayerController : MonoBehaviour
         {
             cameraTransform.localRotation = Quaternion.Euler(verticalRotation, 0f, 0f);
         }
+
+        animator.SetFloat("Look", -verticalRotation / 90f);
+    }
+
+    private void UpdateAnimation()
+    {
+        // Set animation parameters.
+        animator.SetFloat("LocomotionTime", Time.time * 2f);
+        animator.SetBool("IsGrounded", IsGrounded());
     }
 
     /// <summary>

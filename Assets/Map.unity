@@ -4040,9 +4040,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62ac8d056e8d3d2409904426f5730718, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  heal: 25
-  respawn: 30
-  targetObjectName: Player Character
 --- !u!1001 &492881339
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5038,9 +5035,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1525218576529477831, guid: 889d24f8fc349cf45b463fb9b13b0143, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2128544339}
-    - targetCorrespondingSourceObject: {fileID: 1525218576529477831, guid: 889d24f8fc349cf45b463fb9b13b0143, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2128544341}
   m_SourcePrefab: {fileID: 100100000, guid: 889d24f8fc349cf45b463fb9b13b0143, type: 3}
 --- !u!4 &562644785 stripped
 Transform:
@@ -5064,10 +5058,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70a26f57098406f4b966cc1a1b184887, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  HitDirections: {fileID: 0}
-  HealthBar: {fileID: 0}
-  Hp: {fileID: 0}
-  HpNumber: {fileID: 0}
 --- !u!1001 &565534124
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5752,9 +5742,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62ac8d056e8d3d2409904426f5730718, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  heal: 25
-  respawn: 30
-  targetObjectName: Player Character
 --- !u!1001 &657912135
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10325,6 +10312,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   HpBar: {fileID: 0}
+  createPoint: {x: 300, y: 50}
+  MaxHP: 100
+  MinHP: 0
+  CurrentHp: 100
+  text: {fileID: 0}
 --- !u!4 &1184752101 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1621935932662182170, guid: c5a8c280a38e5f44fa40dbb19068142e, type: 3}
@@ -11529,6 +11521,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: PlayerView
       objectReference: {fileID: 0}
+    - target: {fileID: 80474068889901856, guid: 5b355f0c5c921ce48a31da9a23c437e3, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 80474068889901857, guid: 5b355f0c5c921ce48a31da9a23c437e3, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -12584,6 +12580,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53a4488e07861e745bfe169ba3fe4b7a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  menu: {fileID: 9107666531026550381, guid: 4db89042655564fda8662108724f098f, type: 3}
   HitDirections: {fileID: 0}
   HealthBar: {fileID: 0}
   Hp: {fileID: 0}
@@ -14119,9 +14116,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62ac8d056e8d3d2409904426f5730718, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  heal: 25
-  respawn: 30
-  targetObjectName: Player Character
 --- !u!4 &1532222677 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3144927335796171249, guid: 765fefb198c20684ca851e928acf530b, type: 3}
@@ -18611,9 +18605,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62ac8d056e8d3d2409904426f5730718, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  heal: 25
-  respawn: 30
-  targetObjectName: Player Character
 --- !u!1 &2095075541
 GameObject:
   m_ObjectHideFlags: 0
@@ -18994,9 +18985,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62ac8d056e8d3d2409904426f5730718, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  heal: 25
-  respawn: 30
-  targetObjectName: Player Character
 --- !u!4 &2128544330 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2189165697742768765, guid: 889d24f8fc349cf45b463fb9b13b0143, type: 3}
@@ -19327,19 +19315,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 1645600589}
---- !u!114 &2128544341
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2128544331}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9134aa291f3f39341b5e4b8a1a14410d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  HpBar: {fileID: 3617706455484529697, guid: e9019ffa6f7e4c944a9b506ff8374439, type: 3}
 --- !u!1001 &2128636570
 PrefabInstance:
   m_ObjectHideFlags: 0

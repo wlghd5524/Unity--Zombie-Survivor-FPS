@@ -9,8 +9,6 @@ public class Menu : MonoBehaviour
 
     private void Start()
     {
-        SettingsView = Instantiate(SettingsView,transform);
-        
         SettingsView.transform.Find("PopUp").Find("ConfirmButton").GetComponent<Button>().onClick.AddListener(CloseSettings); 
         SettingsView.transform.Find("PopUp").Find("PopupFrame").Find("Background").Find("CloseButton").GetComponent<Button>().onClick.AddListener(CloseSettings);
         SettingsView.SetActive(false);

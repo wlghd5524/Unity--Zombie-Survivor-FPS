@@ -52,7 +52,6 @@ public class PlayerView : MonoBehaviour
         HpBar = Health.transform.Find("HealthBar").transform.Find("Progress").gameObject;
         HpBar.GetComponent<Image>().fillAmount = 1.0f;
 
-        menu = Instantiate(menu);               //인스턴스 생성
         menu.SetActive(false);              //메뉴 비활성화
     }
 

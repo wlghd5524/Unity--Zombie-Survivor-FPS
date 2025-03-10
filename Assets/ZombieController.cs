@@ -19,10 +19,9 @@ public class ZombieController : MonoBehaviour
     private NavMeshAgent agent;
     private float attack_Damage = 25.0f;         //좀비 공격 데미지
     private bool check = false;             //플레이어와의 거리
-    public float rotationSpeed = 5f; // 회전 속도
-    public float speed = 0.5f;
     public float distance = 0.0f;
-    
+
+    public float health = 100.0f;
     
 
     private void Start()
@@ -50,7 +49,7 @@ public class ZombieController : MonoBehaviour
             // 자연스럽게 플레이어 바라보기
             Vector3 direction = (player.transform.position - transform.position).normalized;
             Quaternion lookRotation = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, rotationSpeed * Time.deltaTime);
+            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, agent.angularSpeed * Time.deltaTime);
             agent.SetDestination(player.transform.position);
         }
 

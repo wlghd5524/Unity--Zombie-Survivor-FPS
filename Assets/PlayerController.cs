@@ -31,6 +31,8 @@ public class PlayerController : MonoBehaviour
     private Rigidbody rb;
     private Animator animator;
 
+    public float health = 100.0f;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -38,7 +40,6 @@ public class PlayerController : MonoBehaviour
         rb.freezeRotation = true;
 
         animator = GetComponent<Animator>();
-        animator.SetFloat("WeaponID", 1f);
 
         // 게임 시작 시 커서 숨김 및 잠금
         Cursor.lockState = CursorLockMode.Locked;

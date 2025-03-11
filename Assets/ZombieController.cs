@@ -1,3 +1,4 @@
+using System.Collections;
 using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine;
 using UnityEngine.AI;
@@ -18,10 +19,8 @@ public class ZombieController : MonoBehaviour
     private Animator animator;
     private NavMeshAgent agent;
     private float attack_Damage = 25.0f;         //좀비 공격 데미지
-    private bool check = false;             //플레이어와의 거리
-    public float distance = 0.0f;
-
-    public float health = 100.0f;
+    public float distance = 0.0f;                //좀비와의 거리
+    public float health = 100.0f;                //좀비 체력
     
 
     private void Start()
@@ -57,7 +56,13 @@ public class ZombieController : MonoBehaviour
         {
             state = ZombieStates.Attack;        //공격
         }
-            
+
+        if (health <=0)
+        {
+            state = ZombieStates.Die;
+            agent.isStopped = true;
+        }
+    
         Animation();
     }
 
@@ -69,7 +74,13 @@ public class ZombieController : MonoBehaviour
         playerView.Damage(attack_Damage);
     }
 
-    void Animation()
+    public void Die()
+    {
+        
+        Destroy(gameObject);
+    }
+
+    private void Animation()
     {
         if (animator == null) return;
 

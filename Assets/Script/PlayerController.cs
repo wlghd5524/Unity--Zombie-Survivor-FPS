@@ -30,8 +30,11 @@ public class PlayerController : MonoBehaviour
 
     private Rigidbody rb;
     private Animator animator;
-
-    public float health = 100.0f;
+    
+    // Ã¼·Â 
+    public float current_hp = 100.0f;
+    public float max_hp = 100.0f;
+    public float min_hp = 0.0f;
 
     private void Awake()
     {

@@ -20,9 +20,9 @@ public class PlayerView : MonoBehaviour
     public GameObject Hp;              //체력 수치 나타내는 오브젝트 CurrentNumber
     public TextMeshProUGUI HpNumber;
     private GameObject HpBar;               //체력바 Progress
-    private float CurrentHp = 100.0f;      //현재체력
-    private float MaxHp = 100.0f;          //최대체력
-    private float MinHp = 0.0f;             //최소체력
+    private float CurrentHp;      //현재체력
+    private float max_hp;          //최대 체력
+    private float min_hp;       // 최소 체력
 
     private void Start()
     {
@@ -34,7 +34,10 @@ public class PlayerView : MonoBehaviour
         HealthBar = Health.transform.Find("HealthBar").gameObject;
         Hp = Health.transform.Find("HealthGroup").Find("CurrentNumber").gameObject;
         HpNumber = Hp.GetComponent<TextMeshProUGUI>();
-        HpNumber.text = "100";
+        HpNumber.text = player.GetComponent<PlayerController>().max_hp.ToString();
+        max_hp = player.GetComponent<PlayerController>().max_hp;
+        min_hp = player.GetComponent<PlayerController>().min_hp;
+        CurrentHp = player.GetComponent<PlayerController>().current_hp;
 
         //활성화
         Health.SetActive(true);
@@ -59,7 +62,8 @@ public class PlayerView : MonoBehaviour
 
     public void Damage(float damage)
     {
-        if (CurrentHp > MaxHp)
+        CurrentHp = player.GetComponent<PlayerController>().current_hp;
+        if (CurrentHp > max_hp)
             return;
 
         if (HpNumber == null)
@@ -68,7 +72,7 @@ public class PlayerView : MonoBehaviour
         CurrentHp -= damage;                         //현재 체력에서 데미지받은만큼 감소
         HpNumber.text = CurrentHp.ToString();        //현재 체력수치 UI변경
 
-        if (CurrentHp <= MinHp)                      //현재 체력이 0보다 작아지면 사망
+        if (CurrentHp <= min_hp)                      //현재 체력이 0보다 작아지면 사망
              Dead();
 
 

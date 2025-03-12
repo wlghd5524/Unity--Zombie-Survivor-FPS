@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class WeaponController : MonoBehaviour
 {
@@ -26,6 +27,8 @@ public class WeaponController : MonoBehaviour
     public AudioClip reloadAudioClip;
     public AudioClip dryFireAudioClip;
 
+    public GameObject menuView_Check;
+
     void Start()
     {
     }
@@ -40,6 +43,9 @@ public class WeaponController : MonoBehaviour
     /// </summary>
     public void OnFire(InputAction.CallbackContext context)
     {
+        if (menuView_Check.activeSelf)
+            return;
+
         if (context.performed && currentAmmo > 0)
         {
             Shoot();
@@ -58,6 +64,9 @@ public class WeaponController : MonoBehaviour
     /// </summary>
     public void OnReload(InputAction.CallbackContext context)
     {
+        if (menuView_Check.activeSelf)
+            return;
+
         if (context.performed && !isReloading && currentAmmo < maxAmmo)
         {
             StartCoroutine(ReloadCoroutine());

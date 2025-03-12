@@ -3,11 +3,14 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using SimpleFPS;
+using UnityEngine.InputSystem;
 
 public class PlayerView : MonoBehaviour
 {
     [SerializeField]
     GameObject menu;                //메뉴
+
+    public GameObject player = null;     //플레이어 오브젝트
 
     private Transform child;           //자식 오브젝트 
     private GameObject Health;         //Health 오브젝트
@@ -17,7 +20,6 @@ public class PlayerView : MonoBehaviour
     public GameObject Hp;              //체력 수치 나타내는 오브젝트 CurrentNumber
     public TextMeshProUGUI HpNumber;
     private GameObject HpBar;               //체력바 Progress
-    
     private float CurrentHp = 100.0f;      //현재체력
     private float MaxHp = 100.0f;          //최대체력
     private float MinHp = 0.0f;             //최소체력
@@ -55,10 +57,6 @@ public class PlayerView : MonoBehaviour
         menu.SetActive(false);              //메뉴 비활성화
     }
 
-    private void Update()
-    {
-        InPutKey();
-    }
     public void Damage(float damage)
     {
         if (CurrentHp > MaxHp)
@@ -97,26 +95,32 @@ public class PlayerView : MonoBehaviour
         //게임 종료코드
     }
 
-    public void InPutKey()
+    public void Active_Menu()
     {
-        if(Input.GetKeyUp(KeyCode.Escape))
+        if (menu == null)
+            return;
+
+        if (menu.activeSelf)
         {
-            if (menu == null)
-                return;
+            menu.SetActive(false);
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            player.GetComponent<PlayerController>().enabled = true;
+            player.GetComponent<WeaponController>().enabled = true;
+            gameObject.GetComponent<Change_Ammo_UI>().enabled = true;
+           
+            Time.timeScale = 1;
+        }
 
-            if (menu.activeSelf)
-            {
-                menu.SetActive(false);
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
-            }
-
-            else
-            {
-                menu.SetActive(true);
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
-            }
+        else
+        {
+            menu.SetActive(true);
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            player.GetComponent<PlayerController>().enabled = false;
+            player.GetComponent<WeaponController>().enabled = false;
+            gameObject.GetComponent<Change_Ammo_UI>().enabled = false;
+            Time.timeScale = 0;
         }
     }
 }

@@ -63,6 +63,7 @@ public class PlayerView : MonoBehaviour
     public void Damage(float damage)
     {
         CurrentHp = player.GetComponent<PlayerController>().current_hp;
+
         if (CurrentHp > max_hp)
             return;
 
@@ -70,6 +71,8 @@ public class PlayerView : MonoBehaviour
             HpNumber = Hp.GetComponent<TextMeshProUGUI>();
 
         CurrentHp -= damage;                         //현재 체력에서 데미지받은만큼 감소
+        player.GetComponent<PlayerController>().current_hp = CurrentHp;
+
         HpNumber.text = CurrentHp.ToString();        //현재 체력수치 UI변경
 
         if (CurrentHp <= min_hp)                      //현재 체력이 0보다 작아지면 사망

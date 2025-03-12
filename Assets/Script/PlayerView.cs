@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using SimpleFPS;
+using UnityEngine.InputSystem;
 
 public class PlayerView : MonoBehaviour
 {
@@ -104,6 +105,11 @@ public class PlayerView : MonoBehaviour
             menu.SetActive(false);
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+            player.GetComponent<PlayerController>().enabled = true;
+            player.GetComponent<WeaponController>().enabled = true;
+            gameObject.GetComponent<Change_Ammo_UI>().enabled = true;
+           
+            Time.timeScale = 1;
         }
 
         else
@@ -111,6 +117,10 @@ public class PlayerView : MonoBehaviour
             menu.SetActive(true);
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
+            player.GetComponent<PlayerController>().enabled = false;
+            player.GetComponent<WeaponController>().enabled = false;
+            gameObject.GetComponent<Change_Ammo_UI>().enabled = false;
+            Time.timeScale = 0;
         }
     }
 }

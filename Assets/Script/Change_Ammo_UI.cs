@@ -29,14 +29,28 @@ public class Change_Ammo_UI : MonoBehaviour
         fill_Amount.GetComponent<Image>().fillAmount =((float)weapon.maxAmmo /(float)weapon.currentAmmo);
         //텍스트 변경
         text1.text = (1000+ weapon.maxAmmo).ToString().Substring(1);
-        text2.text = (1000+ weapon.currentAmmo).ToString().Substring(1);
+        text2.text = (1000+ weapon.maxAmmo).ToString().Substring(1);
     }
     //총알 개수 변경 함수
     public void Change_UI()
     {
+        if (weapon.menuView_Check.activeSelf)
+            return;
+
         // 텍스트 변경
         text2.text = (1000 + weapon.currentAmmo).ToString().Substring(1);
         //게이지 바 변경
         fill_Amount.GetComponent<Image>().fillAmount = 1.0f / ((float)weapon.maxAmmo / (float)weapon.currentAmmo);
+    }
+
+    public void Basic_UI()
+    {
+        if (weapon.menuView_Check.activeSelf)
+            return;
+
+        fill_Amount.GetComponent<Image>().fillAmount = 1.0f;
+        //텍스트 변경
+        text1.text = (1000 + weapon.maxAmmo).ToString().Substring(1);
+        text2.text = (1000 + weapon.maxAmmo).ToString().Substring(1);
     }
 }

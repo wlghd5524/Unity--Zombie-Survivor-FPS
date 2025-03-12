@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq.Expressions;
 using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine;
 using UnityEngine.AI;
@@ -21,7 +22,7 @@ public class ZombieController : MonoBehaviour
     private float attack_Damage = 25.0f;         //좀비 공격 데미지
     public float distance = 0.0f;                //좀비와의 거리
     public float health = 100.0f;                //좀비 체력
-    
+    public float fieldOfViewAngle = 60f; // 좀비의 시야각 (예: 60도)
 
     private void Start()
     {
@@ -36,7 +37,7 @@ public class ZombieController : MonoBehaviour
     {
         // 대상이 없으면 실행하지 않음
         if (player == null) return;
-        if (agent == null) return; 
+        if (agent == null && agent.isStopped) return; 
         if (playerView == null) return;
 
         // 플레이어와의 거리 계산
@@ -45,10 +46,7 @@ public class ZombieController : MonoBehaviour
         if (distance > 2.0f)
         {
             state = ZombieStates.Walking;       //걷기
-            // 자연스럽게 플레이어 바라보기
-            Vector3 direction = (player.transform.position - transform.position).normalized;
-            Quaternion lookRotation = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, agent.angularSpeed * Time.deltaTime);
+            Lotation_Zombie();
             agent.SetDestination(player.transform.position);
         }
 
@@ -56,10 +54,18 @@ public class ZombieController : MonoBehaviour
         {
             state = ZombieStates.Attack;        //공격
         }
+        
+        //좀비가 플레이어를 바라보고 있지 않을때
+        if(!IsLookingAtPlayer())
+        {
+            Lotation_Zombie();
+        }
 
         if (health <=0)
         {
             state = ZombieStates.Die;
+            Rigidbody rd = GetComponent<Rigidbody>();
+            rd.isKinematic = true;
             agent.isStopped = true;
         }
     
@@ -75,11 +81,27 @@ public class ZombieController : MonoBehaviour
     }
 
     public void Die()
-    {
-        
+    {  
         Destroy(gameObject);
     }
 
+    bool IsLookingAtPlayer()
+    {
+        Vector3 toPlayer = (player.gameObject.transform.position - transform.position).normalized; // 좀비 → 플레이어 벡터
+        float dotProduct = Vector3.Dot(transform.forward, toPlayer); // 도트 프로덕트 계산
+
+        float viewThreshold = Mathf.Cos(fieldOfViewAngle * 0.5f * Mathf.Deg2Rad); // 각도를 라디안으로 변환 후 코사인 값
+
+        return dotProduct >= viewThreshold; // 특정 값 이상이면 플레이어를 바라보는 중
+    }
+
+    private void Lotation_Zombie()
+    {
+        // 자연스럽게 플레이어 바라보기
+        Vector3 direction = (player.transform.position - transform.position).normalized;
+        Quaternion lookRotation = Quaternion.LookRotation(direction);
+        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, agent.angularSpeed * Time.deltaTime);
+    }
     private void Animation()
     {
         if (animator == null) return;

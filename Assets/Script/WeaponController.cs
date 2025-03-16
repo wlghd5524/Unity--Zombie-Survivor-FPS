@@ -1,13 +1,11 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
 public class WeaponController : MonoBehaviour
 {
     [Header("Animation Settings")]
     public Animator animator;
-    private int idleStateHash;
 
     [Header("Shooting Settings")]
     [Tooltip("1인칭 카메라 (레이캐스트 기준)")]
@@ -20,6 +18,9 @@ public class WeaponController : MonoBehaviour
     public int currentAmmo = 7;
     public int maxAmmo = 7;
     private bool isReloading = false;
+
+    public GameObject bulletPrefab;
+    public Transform bulletSpawnPoint;
 
     [Header("Sound Settings")]
     public AudioSource audioSource;
@@ -44,6 +45,8 @@ public class WeaponController : MonoBehaviour
     public void OnFire(InputAction.CallbackContext context)
     {
         if (menuView_Check.activeSelf)
+            return;
+        if (isReloading)
             return;
 
         if (context.performed && currentAmmo > 0)
@@ -75,7 +78,7 @@ public class WeaponController : MonoBehaviour
 
 
     /// <summary>
-    /// Raycast를 이용하여 총을 발사하는 로직
+    /// 총을 발사하는 로직
     /// </summary>
     void Shoot()
     {
@@ -85,20 +88,33 @@ public class WeaponController : MonoBehaviour
 
         currentAmmo--;
 
-        // fpsCamera의 위치와 전방을 기준으로 레이캐스트 수행
-        RaycastHit hit;
-        if (Physics.Raycast(fpsCamera.transform.position, fpsCamera.transform.forward, out hit, range))
-        {
-            Debug.Log("Hit: " + hit.transform.name);
+        // 화면 중앙에서 레이캐스트를 수행하여 정확한 충돌지점을 구합니다.
+        Vector3 rayOrigin = fpsCamera.transform.position;
+        Vector3 rayDirection = fpsCamera.transform.forward;
 
-            // (옵션) 데미지 적용: 충돌한 오브젝트에 ZombieController 컴포넌트가 있다면 데미지 처리
-            ZombieController target = hit.transform.GetComponent<ZombieController>();
-            if (target != null)
-            {
-                target.health -= damage;
-                Debug.Log($"{target.name}의 남은 체력 : {target.health}");
-            }
+        RaycastHit hit;
+        Vector3 targetPoint;
+
+        if (Physics.Raycast(rayOrigin, rayDirection, out hit, 1000f))
+        {
+            targetPoint = hit.point;  // 충돌 지점이 있다면, 그곳을 타겟으로 지정
         }
+        else
+        {
+            // 아무것도 충돌하지 않았다면 먼 지점을 타겟으로 지정
+            targetPoint = rayOrigin + rayDirection * 100f;
+        }
+
+        // 실제 총알은 카메라에서 발사
+        Vector3 shootOrigin = bulletSpawnPoint.position;
+        Vector3 shootDirection = (targetPoint - bulletSpawnPoint.position).normalized;
+
+        GameObject projectile = Instantiate(bulletPrefab, shootOrigin, Quaternion.LookRotation(shootDirection));
+        Rigidbody bulletRb = projectile.GetComponent<Rigidbody>();
+        Bullet bullet = projectile.GetComponent<Bullet>();
+        bulletRb.freezeRotation = true;
+        bulletRb.linearVelocity = shootDirection * bullet.speed;
+        bullet.weaponController = this;
     }
 
     /// <summary>

@@ -75,7 +75,7 @@ public class ZombieController : MonoBehaviour
         if (playerView == null)
             return;
 
-        playerView.Damage(attack_Damage);
+        player.Damage(attack_Damage);
     }
 
     public void Die()

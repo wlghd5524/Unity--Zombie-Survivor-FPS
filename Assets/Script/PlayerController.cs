@@ -1,3 +1,4 @@
+using SimpleFPS;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -23,6 +24,10 @@ public class PlayerController : MonoBehaviour
     [Tooltip("플레이어 자식에 배치한 FPS 카메라의 Transform")]
     public Transform cameraTransform;
 
+    [SerializeField]
+    GameObject playerView;
+    PlayerView pv;
+
     // 내부에서 저장할 입력 값
     private Vector2 moveInput;
     private Vector2 lookInput;
@@ -47,6 +52,12 @@ public class PlayerController : MonoBehaviour
         // 게임 시작 시 커서 숨김 및 잠금
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        if (playerView == null)
+            GameObject.Find("PlayerView");
+
+        pv = playerView.GetComponent<PlayerView>();
+
     }
 
     // Player Input 컴포넌트가 Send Messages 혹은 Unity Events로 호출할 때 실행되는 메서드들
@@ -148,5 +159,46 @@ public class PlayerController : MonoBehaviour
     private bool IsGrounded()
     {
         return Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, groundCheckDistance);
+    }
+
+    /// <summary>
+    /// 체력회복 함수
+    /// </summary>
+    public void Heal()
+    {
+        float after_hp = current_hp;
+
+        if (current_hp < 50)
+            current_hp += 50;
+
+        else
+            current_hp = 100;
+
+        pv.Heal(after_hp, max_hp);
+    }
+    /// <summary>
+    /// 대미지 함수
+    /// </summary>
+    /// <param name="damage"></param>
+    public void Damage(float damage)
+    {
+        if (current_hp > max_hp)
+            return;
+
+        current_hp -= damage;
+
+        if (current_hp <= min_hp)
+            Dead();
+
+        pv.Damage(current_hp);
+    }
+
+    /// <summary>
+    /// 사망함수
+    /// </summary>
+    private void Dead()
+    {
+        pv.Dead();
+        //게임 종료 코드 작성
     }
 }

@@ -166,7 +166,7 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void Heal()
     {
-        float after_hp = current_hp;
+        float before_hp = current_hp;
 
         if (current_hp < 50)
             current_hp += 50;
@@ -174,7 +174,7 @@ public class PlayerController : MonoBehaviour
         else
             current_hp = 100;
 
-        pv.Heal(after_hp, max_hp);
+        pv.Heal(current_hp, before_hp, max_hp);
     }
     /// <summary>
     /// 대미지 함수

@@ -89,12 +89,12 @@ public class PlayerView : MonoBehaviour
     }
 
     //회복 효과
-    public void Heal(float current_hp, float max_hp)
+    public void Heal(float current_hp, float before_hp, float max_hp)
     {
         Hp_Bar_Change(current_hp);
 
-        if (current_hp > 50)
-            healtext.GetComponent<TextMeshProUGUI>().text = "+" + (max_hp - current_hp).ToString() + " HP";
+        if (before_hp > 50)
+            healtext.GetComponent<TextMeshProUGUI>().text = "+" + (max_hp - before_hp).ToString() + " HP";
         else
             healtext.GetComponent<TextMeshProUGUI>().text = "+50 HP";
 

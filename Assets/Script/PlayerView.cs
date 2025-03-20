@@ -8,6 +8,9 @@ public class PlayerView : MonoBehaviour
 {
     [SerializeField]
     GameObject menu;                //메뉴
+   
+    [SerializeField]
+    GameManager gameManager;
 
     public GameObject player = null;     //플레이어 오브젝트
 
@@ -26,6 +29,7 @@ public class PlayerView : MonoBehaviour
     private void Start()
     {
         child = transform;
+        player = gameManager.go;
 
         Health = child.Find("Health").gameObject;
         HitDirections = child.Find("HitDirections").gameObject;

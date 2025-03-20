@@ -4,6 +4,7 @@ using Photon.Pun;
 public class GameManager : MonoBehaviourPunCallbacks
 {
     public static GameManager Instance;
+    public GameObject go;
 
     private void Awake()
     {
@@ -19,7 +20,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     public override void OnEnable()
     {
         base.OnEnable();
-        PhotonNetwork.Instantiate("Player Character", Vector3.zero, Quaternion.identity);
+        go = PhotonNetwork.Instantiate("Player Character", Vector3.zero, Quaternion.identity);
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created

@@ -1,11 +1,13 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Photon.Pun;
 
-public class WeaponController : MonoBehaviour
+public class WeaponController : MonoBehaviourPunCallbacks
 {
     [Header("Animation Settings")]
-    public Animator animator;
+    public Animator localAnimator;
+    public Animator remoteAnimator;
 
     [Header("Shooting Settings")]
     [Tooltip("1인칭 카메라 (레이캐스트 기준)")]
@@ -32,6 +34,8 @@ public class WeaponController : MonoBehaviour
 
     void Start()
     {
+        fpsCamera = FindFirstObjectByType<Camera>();
+        GetComponent<PlayerInput>().camera = fpsCamera;
     }
 
     void Update()
@@ -44,8 +48,9 @@ public class WeaponController : MonoBehaviour
     /// </summary>
     public void OnFire(InputAction.CallbackContext context)
     {
-        if (menuView_Check.activeSelf)
+        if (!photonView.IsMine)
             return;
+
         if (isReloading)
             return;
 
@@ -53,7 +58,7 @@ public class WeaponController : MonoBehaviour
         {
             Shoot();
         }
-        else if(context.performed && currentAmmo <= 0)
+        else if (context.performed && currentAmmo <= 0)
         {
             audioSource.clip = dryFireAudioClip;
             audioSource.Play();
@@ -67,7 +72,7 @@ public class WeaponController : MonoBehaviour
     /// </summary>
     public void OnReload(InputAction.CallbackContext context)
     {
-        if (menuView_Check.activeSelf)
+        if (!photonView.IsMine)
             return;
 
         if (context.performed && !isReloading && currentAmmo < maxAmmo)
@@ -84,7 +89,8 @@ public class WeaponController : MonoBehaviour
     {
         audioSource.clip = fireAudioClip;
         audioSource.Play();
-        animator.SetTrigger("Fire");
+        localAnimator.SetTrigger("Fire");
+        remoteAnimator.SetTrigger("Fire");
 
         currentAmmo--;
 
@@ -109,12 +115,11 @@ public class WeaponController : MonoBehaviour
         Vector3 shootOrigin = bulletSpawnPoint.position;
         Vector3 shootDirection = (targetPoint - bulletSpawnPoint.position).normalized;
 
-        GameObject projectile = Instantiate(bulletPrefab, shootOrigin, Quaternion.LookRotation(shootDirection));
-        Rigidbody bulletRb = projectile.GetComponent<Rigidbody>();
+        GameObject projectile = PhotonNetwork.Instantiate("Bullet", shootOrigin, Quaternion.LookRotation(shootDirection));
         Bullet bullet = projectile.GetComponent<Bullet>();
-        bulletRb.freezeRotation = true;
-        bulletRb.linearVelocity = shootDirection * bullet.speed;
         bullet.weaponController = this;
+        bullet.shootDirection = shootDirection;
+        bullet.Init();
     }
 
     /// <summary>
@@ -125,14 +130,16 @@ public class WeaponController : MonoBehaviour
         isReloading = true;
         audioSource.clip = reloadAudioClip;
         audioSource.Play();
-        animator.SetBool("IsReloading", true);
+        localAnimator.SetBool("IsReloading", true);
+        remoteAnimator.SetBool("IsReloading", true);
         // 애니메이터가 "Reload" 상태이며, 그 재생이 끝날 때까지 대기
         yield return new WaitUntil(() =>
         {
-            AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+            AnimatorStateInfo stateInfo = localAnimator.GetCurrentAnimatorStateInfo(0);
             return stateInfo.IsName("Reload") && stateInfo.normalizedTime >= 1.0f;
         });
-        animator.SetBool("IsReloading", false);
+        localAnimator.SetBool("IsReloading", false);
+        remoteAnimator.SetBool("IsReloading", false);
         currentAmmo = maxAmmo;
         isReloading = false;
     }

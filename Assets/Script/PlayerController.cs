@@ -1,7 +1,8 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Photon.Pun;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviourPunCallbacks
 {
     [Header("Movement Settings")]
     [Tooltip("플레이어 이동 속도")]
@@ -30,7 +31,7 @@ public class PlayerController : MonoBehaviour
 
     private Rigidbody rb;
     private Animator animator;
-    
+
     // 체력 
     public float current_hp = 100.0f;
     public float max_hp = 100.0f;
@@ -44,9 +45,22 @@ public class PlayerController : MonoBehaviour
 
         animator = GetComponent<Animator>();
 
-        // 게임 시작 시 커서 숨김 및 잠금
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        if (photonView.IsMine)
+        {
+            // 게임 시작 시 커서 숨김 및 잠금
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+        else
+        {
+            if (cameraTransform != null)
+            {
+                cameraTransform.gameObject.SetActive(false);
+
+                // 원격 플레이어일 경우, LocalPlayer 레이어를 RemotePlayer 레이어로 변경
+                ChangeLayerRecursively(transform, LayerMask.NameToLayer("LocalPlayer"), LayerMask.NameToLayer("RemotePlayer"));
+            }
+        }
     }
 
     // Player Input 컴포넌트가 Send Messages 혹은 Unity Events로 호출할 때 실행되는 메서드들
@@ -56,6 +70,8 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void OnMove(InputAction.CallbackContext context)
     {
+        if (!photonView.IsMine)
+            return;
         if (context.performed)
             moveInput = context.ReadValue<Vector2>();
         else if (context.canceled)
@@ -67,6 +83,8 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void OnLook(InputAction.CallbackContext context)
     {
+        if (!photonView.IsMine)
+            return;
         if (context.performed)
             lookInput = context.ReadValue<Vector2>();
         else if (context.canceled)
@@ -78,18 +96,22 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void OnJump(InputAction.CallbackContext context)
     {
+        if (!photonView.IsMine)
+            return;
         // 점프 입력이 performed 상태이고, 바닥에 닿아 있을 때만 점프 처리
         if (context.performed && IsGrounded())
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             animator.SetTrigger("Jump");
-            
+
         }
     }
 
     // 물리 기반 이동 및 중력 처리는 FixedUpdate에서 실행합니다.
     private void FixedUpdate()
     {
+        if (!photonView.IsMine)
+            return;
         HandleMovement();
         UpdateAnimation();
     }
@@ -97,6 +119,8 @@ public class PlayerController : MonoBehaviour
     // 회전(시점) 처리는 Update에서 실행합니다.
     private void Update()
     {
+        if (!photonView.IsMine)
+            return;
         HandleLook();
     }
 
@@ -148,5 +172,17 @@ public class PlayerController : MonoBehaviour
     private bool IsGrounded()
     {
         return Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, groundCheckDistance);
+    }
+
+    void ChangeLayerRecursively(Transform obj, int targetLayer, int newLayer)
+    {
+        if (obj.gameObject.layer == targetLayer)
+        {
+            obj.gameObject.layer = newLayer;
+        }
+        foreach (Transform child in obj)
+        {
+            ChangeLayerRecursively(child, targetLayer, newLayer);
+        }
     }
 }

@@ -2,7 +2,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
-using SimpleFPS;
 using UnityEngine.InputSystem;
 
 public class PlayerView : MonoBehaviour

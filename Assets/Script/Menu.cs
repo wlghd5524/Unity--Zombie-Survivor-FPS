@@ -1,4 +1,3 @@
-using SimpleFPS;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +8,7 @@ public class Menu : MonoBehaviour
 
     private void Start()
     {
-        SettingsView.transform.Find("PopUp").Find("ConfirmButton").GetComponent<Button>().onClick.AddListener(CloseSettings); 
+        SettingsView.transform.Find("PopUp/ConfirmButton").GetComponent<Button>().onClick.AddListener(CloseSettings); 
         SettingsView.transform.Find("PopUp").Find("PopupFrame").Find("Background").Find("CloseButton").GetComponent<Button>().onClick.AddListener(CloseSettings);
         SettingsView.SetActive(false);
     }

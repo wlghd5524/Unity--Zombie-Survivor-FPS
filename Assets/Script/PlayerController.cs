@@ -1,8 +1,8 @@
+using SimpleFPS;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Photon.Pun;
 
-public class PlayerController : MonoBehaviourPunCallbacks
+public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
     [Tooltip("플레이어 이동 속도")]
@@ -24,6 +24,10 @@ public class PlayerController : MonoBehaviourPunCallbacks
     [Tooltip("플레이어 자식에 배치한 FPS 카메라의 Transform")]
     public Transform cameraTransform;
 
+    [SerializeField]
+    GameObject playerView;
+    PlayerView pv;
+
     // 내부에서 저장할 입력 값
     private Vector2 moveInput;
     private Vector2 lookInput;
@@ -31,7 +35,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
     private Rigidbody rb;
     private Animator animator;
-
+    
     // 체력 
     public float current_hp = 100.0f;
     public float max_hp = 100.0f;
@@ -45,22 +49,15 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
         animator = GetComponent<Animator>();
 
-        if (photonView.IsMine)
-        {
-            // 게임 시작 시 커서 숨김 및 잠금
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-        }
-        else
-        {
-            if (cameraTransform != null)
-            {
-                cameraTransform.gameObject.SetActive(false);
+        // 게임 시작 시 커서 숨김 및 잠금
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
 
-                // 원격 플레이어일 경우, LocalPlayer 레이어를 RemotePlayer 레이어로 변경
-                ChangeLayerRecursively(transform, LayerMask.NameToLayer("LocalPlayer"), LayerMask.NameToLayer("RemotePlayer"));
-            }
-        }
+        if (playerView == null)
+            GameObject.Find("PlayerView");
+
+        pv = playerView.GetComponent<PlayerView>();
+
     }
 
     // Player Input 컴포넌트가 Send Messages 혹은 Unity Events로 호출할 때 실행되는 메서드들
@@ -70,8 +67,6 @@ public class PlayerController : MonoBehaviourPunCallbacks
     /// </summary>
     public void OnMove(InputAction.CallbackContext context)
     {
-        if (!photonView.IsMine)
-            return;
         if (context.performed)
             moveInput = context.ReadValue<Vector2>();
         else if (context.canceled)
@@ -83,8 +78,6 @@ public class PlayerController : MonoBehaviourPunCallbacks
     /// </summary>
     public void OnLook(InputAction.CallbackContext context)
     {
-        if (!photonView.IsMine)
-            return;
         if (context.performed)
             lookInput = context.ReadValue<Vector2>();
         else if (context.canceled)
@@ -96,22 +89,18 @@ public class PlayerController : MonoBehaviourPunCallbacks
     /// </summary>
     public void OnJump(InputAction.CallbackContext context)
     {
-        if (!photonView.IsMine)
-            return;
         // 점프 입력이 performed 상태이고, 바닥에 닿아 있을 때만 점프 처리
         if (context.performed && IsGrounded())
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             animator.SetTrigger("Jump");
-
+            
         }
     }
 
     // 물리 기반 이동 및 중력 처리는 FixedUpdate에서 실행합니다.
     private void FixedUpdate()
     {
-        if (!photonView.IsMine)
-            return;
         HandleMovement();
         UpdateAnimation();
     }
@@ -119,8 +108,6 @@ public class PlayerController : MonoBehaviourPunCallbacks
     // 회전(시점) 처리는 Update에서 실행합니다.
     private void Update()
     {
-        if (!photonView.IsMine)
-            return;
         HandleLook();
     }
 
@@ -174,15 +161,44 @@ public class PlayerController : MonoBehaviourPunCallbacks
         return Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, groundCheckDistance);
     }
 
-    void ChangeLayerRecursively(Transform obj, int targetLayer, int newLayer)
+    /// <summary>
+    /// 체력회복 함수
+    /// </summary>
+    public void Heal()
     {
-        if (obj.gameObject.layer == targetLayer)
-        {
-            obj.gameObject.layer = newLayer;
-        }
-        foreach (Transform child in obj)
-        {
-            ChangeLayerRecursively(child, targetLayer, newLayer);
-        }
+        float before_hp = current_hp;
+
+        if (current_hp < 50)
+            current_hp += 50;
+
+        else
+            current_hp = 100;
+
+        pv.Heal(current_hp, before_hp, max_hp);
+    }
+    /// <summary>
+    /// 대미지 함수
+    /// </summary>
+    /// <param name="damage"></param>
+    public void Damage(float damage)
+    {
+        if (current_hp > max_hp)
+            return;
+
+        current_hp -= damage;
+
+        if (current_hp <= min_hp)
+            Dead();
+
+        pv.Damage(current_hp);
+    }
+
+    /// <summary>
+    /// 사망함수
+    /// </summary>
+    private void Dead()
+    {
+        pv.Dead();
+        //게임 종료 코드 작성
     }
 }

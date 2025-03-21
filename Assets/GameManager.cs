@@ -15,7 +15,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
         DontDestroyOnLoad(gameObject);
         Instance = this;
-    }
+    } 
 
     public override void OnEnable()
     {

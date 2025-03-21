@@ -7,8 +7,7 @@ using UnityEngine.InputSystem.HID;
 
 public class PlayerView : MonoBehaviour
 {
-    [SerializeField]
-    GameObject menu;                //메뉴
+    public GameObject menu;                //메뉴
    
     [SerializeField]
     GameManager gameManager;
@@ -27,11 +26,13 @@ public class PlayerView : MonoBehaviour
     public TextMeshProUGUI HpNumber;
     private GameObject HpBar;               //체력바 Progress
 
+    
     private void Start()
     {
         child = transform;
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         player = gameManager.go;
-
+     
         Health = child.Find("Health").gameObject;
         HitDirections = child.Find("HitDirections").gameObject;
         DeathEffect = child.Find("DeathEffect").gameObject;
@@ -63,6 +64,8 @@ public class PlayerView : MonoBehaviour
         HpBar.GetComponent<Image>().fillAmount = 1.0f;
 
         menu.SetActive(false);              //메뉴 비활성화
+
+        gameObject.GetComponent<Change_Ammo_UI>().init();
     }
 
     //대미지 함수

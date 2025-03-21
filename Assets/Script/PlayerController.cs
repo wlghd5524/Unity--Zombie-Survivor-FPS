@@ -1,8 +1,9 @@
-using SimpleFPS;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Photon.Pun;
+using UnityEngine.Rendering;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviourPunCallbacks
 {
     [Header("Movement Settings")]
     [Tooltip("플레이어 이동 속도")]
@@ -24,10 +25,6 @@ public class PlayerController : MonoBehaviour
     [Tooltip("플레이어 자식에 배치한 FPS 카메라의 Transform")]
     public Transform cameraTransform;
 
-    [SerializeField]
-    GameObject playerView;
-    PlayerView pv;
-
     // 내부에서 저장할 입력 값
     private Vector2 moveInput;
     private Vector2 lookInput;
@@ -35,11 +32,14 @@ public class PlayerController : MonoBehaviour
 
     private Rigidbody rb;
     private Animator animator;
-    
+
     // 체력 
     public float current_hp = 100.0f;
     public float max_hp = 100.0f;
     public float min_hp = 0.0f;
+
+    GameObject playerView;
+    PlayerView pv;
 
     private void Awake()
     {
@@ -49,15 +49,27 @@ public class PlayerController : MonoBehaviour
 
         animator = GetComponent<Animator>();
 
-        // 게임 시작 시 커서 숨김 및 잠금
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-
         if (playerView == null)
-            GameObject.Find("PlayerView");
+            playerView = GameObject.Find("PlayerView");
 
         pv = playerView.GetComponent<PlayerView>();
 
+        if (photonView.IsMine)
+        {
+            // 게임 시작 시 커서 숨김 및 잠금
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+        else
+        {
+            if (cameraTransform != null)
+            {
+                cameraTransform.gameObject.SetActive(false);
+
+                // 원격 플레이어일 경우, LocalPlayer 레이어를 RemotePlayer 레이어로 변경
+                ChangeLayerRecursively(transform, LayerMask.NameToLayer("LocalPlayer"), LayerMask.NameToLayer("RemotePlayer"));
+            }
+        }
     }
 
     // Player Input 컴포넌트가 Send Messages 혹은 Unity Events로 호출할 때 실행되는 메서드들
@@ -67,6 +79,8 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void OnMove(InputAction.CallbackContext context)
     {
+        if (!photonView.IsMine)
+            return;
         if (context.performed)
             moveInput = context.ReadValue<Vector2>();
         else if (context.canceled)
@@ -78,6 +92,8 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void OnLook(InputAction.CallbackContext context)
     {
+        if (!photonView.IsMine)
+            return;
         if (context.performed)
             lookInput = context.ReadValue<Vector2>();
         else if (context.canceled)
@@ -89,18 +105,30 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void OnJump(InputAction.CallbackContext context)
     {
+        if (!photonView.IsMine)
+            return;
         // 점프 입력이 performed 상태이고, 바닥에 닿아 있을 때만 점프 처리
         if (context.performed && IsGrounded())
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             animator.SetTrigger("Jump");
-            
+
         }
     }
+    public void OnCanceld(InputAction.CallbackContext context)
+    {
+        if (!photonView.IsMine)
+            return;
 
+        if(context.canceled)
+            pv.Active_Menu();
+
+    }
     // 물리 기반 이동 및 중력 처리는 FixedUpdate에서 실행합니다.
     private void FixedUpdate()
     {
+        if (!photonView.IsMine)
+            return;
         HandleMovement();
         UpdateAnimation();
     }
@@ -108,6 +136,8 @@ public class PlayerController : MonoBehaviour
     // 회전(시점) 처리는 Update에서 실행합니다.
     private void Update()
     {
+        if (!photonView.IsMine)
+            return;
         HandleLook();
     }
 
@@ -161,8 +191,19 @@ public class PlayerController : MonoBehaviour
         return Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, groundCheckDistance);
     }
 
+    void ChangeLayerRecursively(Transform obj, int targetLayer, int newLayer)
+    {
+        if (obj.gameObject.layer == targetLayer)
+        {
+            obj.gameObject.layer = newLayer;
+        }
+        foreach (Transform child in obj)
+        {
+            ChangeLayerRecursively(child, targetLayer, newLayer);
+        }
+    }
     /// <summary>
-    /// 체력회복 함수
+    /// 회복기능
     /// </summary>
     public void Heal()
     {
@@ -177,7 +218,7 @@ public class PlayerController : MonoBehaviour
         pv.Heal(current_hp, before_hp, max_hp);
     }
     /// <summary>
-    /// 대미지 함수
+    /// 대미지기능
     /// </summary>
     /// <param name="damage"></param>
     public void Damage(float damage)
@@ -192,13 +233,11 @@ public class PlayerController : MonoBehaviour
 
         pv.Damage(current_hp);
     }
-
     /// <summary>
     /// 사망함수
     /// </summary>
     private void Dead()
     {
         pv.Dead();
-        //게임 종료 코드 작성
     }
 }

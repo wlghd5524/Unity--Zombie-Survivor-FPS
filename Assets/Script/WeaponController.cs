@@ -30,17 +30,18 @@ public class WeaponController : MonoBehaviourPunCallbacks
     public AudioClip reloadAudioClip;
     public AudioClip dryFireAudioClip;
 
-    public GameObject menuView_Check;
+    private PlayerView playerView;
+    private Change_Ammo_UI change_Ammo_UI;
 
     void Start()
     {
         fpsCamera = FindFirstObjectByType<Camera>();
         GetComponent<PlayerInput>().camera = fpsCamera;
+        playerView = GameObject.Find("PlayerView").GetComponent<PlayerView>();
+        change_Ammo_UI = playerView.gameObject.GetComponent<Change_Ammo_UI>();
     }
 
-    void Update()
-    {
-    }
+
 
     /// <summary>
     /// 새로운 Input System을 사용할 때, Player Input 컴포넌트가 "Fire" 액션에 대해 호출하는 메서드.
@@ -52,6 +53,9 @@ public class WeaponController : MonoBehaviourPunCallbacks
             return;
 
         if (isReloading)
+            return;
+
+        if (playerView.menu.activeSelf)
             return;
 
         if (context.performed && currentAmmo > 0)
@@ -75,9 +79,13 @@ public class WeaponController : MonoBehaviourPunCallbacks
         if (!photonView.IsMine)
             return;
 
+        if (playerView.menu.activeSelf)
+            return;
+
         if (context.performed && !isReloading && currentAmmo < maxAmmo)
         {
             StartCoroutine(ReloadCoroutine());
+
         }
     }
 
@@ -93,6 +101,7 @@ public class WeaponController : MonoBehaviourPunCallbacks
         remoteAnimator.SetTrigger("Fire");
 
         currentAmmo--;
+        change_Ammo_UI.Change_UI(currentAmmo, maxAmmo);
 
         // 화면 중앙에서 레이캐스트를 수행하여 정확한 충돌지점을 구합니다.
         Vector3 rayOrigin = fpsCamera.transform.position;
@@ -141,6 +150,7 @@ public class WeaponController : MonoBehaviourPunCallbacks
         localAnimator.SetBool("IsReloading", false);
         remoteAnimator.SetBool("IsReloading", false);
         currentAmmo = maxAmmo;
+        change_Ammo_UI.Basic_UI(currentAmmo,maxAmmo);
         isReloading = false;
     }
 }

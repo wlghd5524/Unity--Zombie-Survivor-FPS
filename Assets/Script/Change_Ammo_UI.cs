@@ -15,38 +15,32 @@ public class Change_Ammo_UI : MonoBehaviour
 
     TextMeshProUGUI text1;      //최대 탄창 UI텍스트
     TextMeshProUGUI text2;      //현재 탄창 UI텍스트
-
     WeaponController weapon;
     PlayerView pv;
-    private void Start()
+
+    public void init()
     {
         pv = gameObject.GetComponent<PlayerView>();
         text1 = max_Ammo.GetComponent<TextMeshProUGUI>();
         text2 = current_Ammo.GetComponent<TextMeshProUGUI>();
         weapon = pv.player.GetComponent<WeaponController>();
         //게이지 바 변경
-        fill_Amount.GetComponent<Image>().fillAmount =((float)weapon.maxAmmo /(float)weapon.currentAmmo);
+        fill_Amount.GetComponent<Image>().fillAmount = ((float)weapon.maxAmmo / (float)weapon.currentAmmo);
         //텍스트 변경
-        text1.text = (1000+ weapon.maxAmmo).ToString().Substring(1);
-        text2.text = (1000+ weapon.maxAmmo).ToString().Substring(1);
+        text1.text = (1000 + weapon.maxAmmo).ToString().Substring(1);
+        text2.text = (1000 + weapon.maxAmmo).ToString().Substring(1);
     }
     //총알 개수 변경 함수
-    public void Change_UI()
+    public void Change_UI(int currentAmmo, int maxAmmo)
     {
-        if (weapon.menuView_Check.activeSelf)
-            return;
-
         // 텍스트 변경
-        text2.text = (1000 + weapon.currentAmmo).ToString().Substring(1);
+        text2.text = (1000 + currentAmmo).ToString().Substring(1);
         //게이지 바 변경
-        fill_Amount.GetComponent<Image>().fillAmount = 1.0f / ((float)weapon.maxAmmo / (float)weapon.currentAmmo);
+        fill_Amount.GetComponent<Image>().fillAmount = 1.0f / ((float)maxAmmo / (float)currentAmmo);
     }
 
-    public void Basic_UI()
-    {
-        if (weapon.menuView_Check.activeSelf)
-            return;
-
+    public void Basic_UI(int currentAmmo, int maxAmmo)
+    { 
         fill_Amount.GetComponent<Image>().fillAmount = 1.0f;
         //텍스트 변경
         text1.text = (1000 + weapon.maxAmmo).ToString().Substring(1);

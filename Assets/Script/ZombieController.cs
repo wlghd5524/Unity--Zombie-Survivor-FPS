@@ -25,7 +25,7 @@ public class ZombieController : MonoBehaviour
     private void Start()
     {
         //플레이어 찾기
-        player = GameObject.Find("Player Character").GetComponent<PlayerController>();
+        player = GameObject.Find("GameManager").GetComponent<GameManager>().go.GetComponent<PlayerController>();
         playerView = GameObject.Find("PlayerView").GetComponent<PlayerView>();
         animator = GetComponent<Animator>();
         agent = GetComponent<NavMeshAgent>();
@@ -75,7 +75,7 @@ public class ZombieController : MonoBehaviour
         if (playerView == null)
             return;
 
-        playerView.Damage(attack_Damage);
+        player.Damage(attack_Damage);
     }
 
     public void Die()

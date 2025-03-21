@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Photon.Pun;
+using UnityEngine.Rendering;
 
 public class PlayerController : MonoBehaviourPunCallbacks
 {
@@ -37,6 +38,9 @@ public class PlayerController : MonoBehaviourPunCallbacks
     public float max_hp = 100.0f;
     public float min_hp = 0.0f;
 
+    GameObject playerView;
+    PlayerView pv;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -44,6 +48,11 @@ public class PlayerController : MonoBehaviourPunCallbacks
         rb.freezeRotation = true;
 
         animator = GetComponent<Animator>();
+
+        if (playerView == null)
+            playerView = GameObject.Find("PlayerView");
+
+        pv = playerView.GetComponent<PlayerView>();
 
         if (photonView.IsMine)
         {
@@ -106,7 +115,15 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
         }
     }
+    public void OnCanceld(InputAction.CallbackContext context)
+    {
+        if (!photonView.IsMine)
+            return;
 
+        if(context.canceled)
+            pv.Active_Menu();
+
+    }
     // 물리 기반 이동 및 중력 처리는 FixedUpdate에서 실행합니다.
     private void FixedUpdate()
     {
@@ -184,5 +201,43 @@ public class PlayerController : MonoBehaviourPunCallbacks
         {
             ChangeLayerRecursively(child, targetLayer, newLayer);
         }
+    }
+    /// <summary>
+    /// 회복기능
+    /// </summary>
+    public void Heal()
+    {
+        float before_hp = current_hp;
+
+        if (current_hp < 50)
+            current_hp += 50;
+
+        else
+            current_hp = 100;
+
+        pv.Heal(current_hp, before_hp, max_hp);
+    }
+    /// <summary>
+    /// 대미지기능
+    /// </summary>
+    /// <param name="damage"></param>
+    public void Damage(float damage)
+    {
+        if (current_hp > max_hp)
+            return;
+
+        current_hp -= damage;
+
+        if (current_hp <= min_hp)
+            Dead();
+
+        pv.Damage(current_hp);
+    }
+    /// <summary>
+    /// 사망함수
+    /// </summary>
+    private void Dead()
+    {
+        pv.Dead();
     }
 }

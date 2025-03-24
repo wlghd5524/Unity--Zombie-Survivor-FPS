@@ -205,12 +205,12 @@ public class PlayerController : MonoBehaviourPunCallbacks
     /// <summary>
     /// 회복기능
     /// </summary>
-    public void Heal()
+    public void Heal(int heal)
     {
         float before_hp = current_hp;
 
-        if (current_hp < 50)
-            current_hp += 50;
+        if (current_hp < heal)
+            current_hp += heal;
 
         else
             current_hp = 100;
@@ -239,5 +239,15 @@ public class PlayerController : MonoBehaviourPunCallbacks
     private void Dead()
     {
         pv.Dead();
+    }
+
+    /// <summary>
+    /// 장전함수
+    /// </summary>
+    /// <param name="Pistol_Ammo"></param>
+    public void Reload(int Pistol_Ammo)
+    {
+        GetComponent<WeaponController>().remaining_Ammo += Pistol_Ammo;
+        pv.GetComponent<Change_Ammo_UI>().Basic_UI();
     }
 }

@@ -18,7 +18,8 @@ public class WeaponController : MonoBehaviourPunCallbacks
     public float damage = 50f;
 
     public int currentAmmo = 7;
-    public int maxAmmo = 7;
+    public int remaining_Ammo = 30; // 남은 탄약 개수
+    public int Max_Ammo = 7;
     private bool isReloading = false;
 
     public GameObject bulletPrefab;
@@ -82,10 +83,9 @@ public class WeaponController : MonoBehaviourPunCallbacks
         if (playerView.menu.activeSelf)
             return;
 
-        if (context.performed && !isReloading && currentAmmo < maxAmmo)
+        if (context.performed && !isReloading && remaining_Ammo > 0 && currentAmmo < Max_Ammo)
         {
             StartCoroutine(ReloadCoroutine());
-
         }
     }
 
@@ -101,7 +101,7 @@ public class WeaponController : MonoBehaviourPunCallbacks
         remoteAnimator.SetTrigger("Fire");
 
         currentAmmo--;
-        change_Ammo_UI.Change_UI(currentAmmo, maxAmmo);
+        change_Ammo_UI.Change_UI(currentAmmo, Max_Ammo);
 
         // 화면 중앙에서 레이캐스트를 수행하여 정확한 충돌지점을 구합니다.
         Vector3 rayOrigin = fpsCamera.transform.position;
@@ -128,7 +128,7 @@ public class WeaponController : MonoBehaviourPunCallbacks
         Bullet bullet = projectile.GetComponent<Bullet>();
         bullet.weaponController = this;
         bullet.shootDirection = shootDirection;
-        bullet.Init(this);
+        bullet.Init();
     }
 
     /// <summary>
@@ -149,8 +149,20 @@ public class WeaponController : MonoBehaviourPunCallbacks
         });
         localAnimator.SetBool("IsReloading", false);
         remoteAnimator.SetBool("IsReloading", false);
-        currentAmmo = maxAmmo;
-        change_Ammo_UI.Basic_UI(currentAmmo,maxAmmo);
+
+        if ((remaining_Ammo - (Max_Ammo - currentAmmo)) < 0)
+        {
+            currentAmmo += remaining_Ammo;
+            remaining_Ammo = 0;
+        }
+        else
+        {
+            remaining_Ammo = remaining_Ammo - (Max_Ammo - currentAmmo);
+            currentAmmo = Max_Ammo;
+        }
+            
+            
+        change_Ammo_UI.Basic_UI();
         isReloading = false;
     }
 }

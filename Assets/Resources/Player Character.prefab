@@ -1033,7 +1033,8 @@ MonoBehaviour:
   range: 100
   damage: 50
   currentAmmo: 7
-  maxAmmo: 7
+  remaining_Ammo: 30
+  Max_Ammo: 7
   bulletPrefab: {fileID: 4782984894998028250, guid: 58ef27be5564d50488a199e5e39f6c6d, type: 3}
   bulletSpawnPoint: {fileID: 8932665549403571257}
   audioSource: {fileID: 1266975446632210623}

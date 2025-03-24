@@ -128,7 +128,7 @@ public class WeaponController : MonoBehaviourPunCallbacks
         Bullet bullet = projectile.GetComponent<Bullet>();
         bullet.weaponController = this;
         bullet.shootDirection = shootDirection;
-        bullet.Init();
+        bullet.Init(this);
     }
 
     /// <summary>

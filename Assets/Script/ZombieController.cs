@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using Photon.Pun;
 using UnityEngine;
 using UnityEngine.AI;
@@ -14,7 +14,7 @@ public class ZombieController : MonoBehaviourPunCallbacks
 
     ZombieStates state;
 
-    private GameObject targetPlayer = null; // °¡Àå °¡±î¿î ÇÃ·¹ÀÌ¾î
+    private GameObject targetPlayer = null; // ê°€ì¥ ê°€ê¹Œìš´ í”Œë ˆì´ì–´
     private Animator animator;
     private NavMeshAgent agent;
     private float attack_Damage = 25.0f;
@@ -24,30 +24,31 @@ public class ZombieController : MonoBehaviourPunCallbacks
     private bool isDead = false;
     private Vector3 lastTargetPosition;
     private PlayerController playerController;
+
+    private void Awake()
+    {
+        photonView.OwnershipTransfer = OwnershipOption.Takeover; // âœ… ìë™ ì†Œìœ ê¶Œ ì´ì „ ì„¤ì •
+    }
     private void Start()
     {
         animator = GetComponent<Animator>();
         agent = GetComponent<NavMeshAgent>();
 
         lastTargetPosition = transform.position;
-        FindClosestPlayer(); // ÃÖÃÊ ½ÇÇà ½Ã °¡Àå °¡±î¿î ÇÃ·¹ÀÌ¾î Ã£±â
+        FindClosestPlayer(); // ìµœì´ˆ ì‹¤í–‰ ì‹œ ê°€ì¥ ê°€ê¹Œìš´ í”Œë ˆì´ì–´ ì°¾ê¸°
     }
 
     void Update()
     {
         if (isDead) return;
 
-        if (health <= 0)
-        {
-            Die();
-        }
         if (targetPlayer == null)
         {
            
             return;
         }
 
-        FindClosestPlayer(); // ÃßÀû ´ë»óÀÌ ¾øÀ¸¸é ´Ù½Ã Ã£±â
+        FindClosestPlayer(); // ì¶”ì  ëŒ€ìƒì´ ì—†ìœ¼ë©´ ë‹¤ì‹œ ì°¾ê¸°
 
         distance = Vector3.Distance(transform.position, targetPlayer.transform.position);
 
@@ -186,12 +187,23 @@ public class ZombieController : MonoBehaviourPunCallbacks
         }
         else
         {
-            // ¼ÒÀ¯±ÇÀ» º¯°æÇÏ°í »èÁ¦
+            // ì†Œìœ ê¶Œì„ ë³€ê²½í•˜ê³  ì‚­ì œ
             photonView.TransferOwnership(PhotonNetwork.LocalPlayer);
-            PhotonNetwork.Destroy(gameObject);
 
-            // ¶Ç´Â RPC ¹æ½Ä »ç¿ë
+            // ë˜ëŠ” RPC ë°©ì‹ ì‚¬ìš©
             photonView.RPC("DestroyZombie", RpcTarget.MasterClient);
         }
     }
+    [PunRPC]
+    public void TakeDamage(float damage)
+    {
+        health -= damage;
+        Debug.Log("ë‚¨ì€ ì¢€ë¹„ ì²´ë ¥: " + health);
+
+        if (health <= 0)
+        {
+            Die();
+        }
+    }
+
 }

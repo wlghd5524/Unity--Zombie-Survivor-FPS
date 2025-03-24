@@ -1,105 +1,154 @@
 using System.Collections;
+using Photon.Pun;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class ZombieController : MonoBehaviour
+public class ZombieController : MonoBehaviourPunCallbacks
 {
-    private enum ZombieStates           //좀비 상태
+    private enum ZombieStates
     {
-        Attack,         //공격
-        Die,            //죽음
-        Walking         //걷기
+        Attack,
+        Die,
+        Walking
     }
 
-    ZombieStates state;      //좀비 상태 결정
+    ZombieStates state;
 
-    private PlayerController player = null;
-    private PlayerView playerView = null;
+    private GameObject targetPlayer = null; // 가장 가까운 플레이어
     private Animator animator;
     private NavMeshAgent agent;
-    private float attack_Damage = 25.0f;         //좀비 공격 데미지
-    public float distance = 0.0f;                //좀비와의 거리
-    public float health = 100.0f;                //좀비 체력
-    public float fieldOfViewAngle = 60f; // 좀비의 시야각 (예: 60도)
-
+    private float attack_Damage = 25.0f;
+    public float distance = 0.0f;
+    public float health = 100.0f;
+    public float fieldOfViewAngle = 60f;
+    private bool isDead = false;
+    private Vector3 lastTargetPosition;
+    private PlayerController playerController;
     private void Start()
     {
-        //플레이어 찾기
-        player = GameObject.Find("GameManager").GetComponent<GameManager>().go.GetComponent<PlayerController>();
-        playerView = GameObject.Find("PlayerView").GetComponent<PlayerView>();
         animator = GetComponent<Animator>();
         agent = GetComponent<NavMeshAgent>();
+
+        lastTargetPosition = transform.position;
+        FindClosestPlayer(); // 최초 실행 시 가장 가까운 플레이어 찾기
     }
 
     void Update()
     {
-        // 대상이 없으면 실행하지 않음
-        if (player == null) return;
-        if (agent == null && agent.isStopped) return; 
-        if (playerView == null) return;
+        if (isDead) return;
 
-        // 플레이어와의 거리 계산
-        distance = Vector3.Distance(transform.position, player.transform.position);
+        if (health <= 0)
+        {
+            Die();
+        }
+        if (targetPlayer == null)
+        {
+           
+            return;
+        }
+
+        FindClosestPlayer(); // 추적 대상이 없으면 다시 찾기
+
+        distance = Vector3.Distance(transform.position, targetPlayer.transform.position);
 
         if (distance > 2.0f)
         {
-            state = ZombieStates.Walking;       //걷기
-            Lotation_Zombie();
-            agent.SetDestination(player.transform.position);
-        }
+            state = ZombieStates.Walking;
 
+            if (Vector3.Distance(lastTargetPosition, targetPlayer.transform.position) > 0.5f)
+            {
+                lastTargetPosition = targetPlayer.transform.position;
+                RotateTowardsPlayer();
+                agent.SetDestination(lastTargetPosition);
+            }
+        }
         else
         {
-            state = ZombieStates.Attack;        //공격
-        }
-        
-        //좀비가 플레이어를 바라보고 있지 않을때
-        if(!IsLookingAtPlayer())
-        {
-            Lotation_Zombie();
+            state = ZombieStates.Attack;
         }
 
-        if (health <=0)
+        if (!IsLookingAtPlayer())
         {
-            state = ZombieStates.Die;
-            Rigidbody rd = GetComponent<Rigidbody>();
-            rd.isKinematic = true;
-            agent.isStopped = true;
+            RotateTowardsPlayer();
         }
-    
+
         Animation();
     }
 
-    public void Attack()           // 공격 함수
+    void FindClosestPlayer()
     {
-        if (playerView == null)
-            return;
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        float closestDistance = Mathf.Infinity;
+        GameObject closestPlayer = null;
 
-        player.Damage(attack_Damage);
+        foreach (GameObject player in players)
+        {
+            float playerDistance = Vector3.Distance(transform.position, player.transform.position);
+            if (playerDistance < closestDistance)
+            {
+                closestDistance = playerDistance;
+                closestPlayer = player;
+            }
+        }
+
+        targetPlayer = closestPlayer;
     }
 
-    public void Die()
-    {  
-        Destroy(gameObject);
+    public void Attack()
+    {
+        if (targetPlayer == null) return;
+        playerController = targetPlayer.GetComponent<PlayerController>();
+        if (playerController != null)
+        {
+            playerController.Damage(attack_Damage);
+        }
+    }
+
+    private void Die()
+    {
+        if (isDead) return;
+
+        state = ZombieStates.Die;
+        isDead = true;
+
+        Rigidbody rd = GetComponent<Rigidbody>();
+        if (rd != null) rd.isKinematic = true;
+        if (agent != null) agent.isStopped = true;
+
+        Animation();
+        StartCoroutine(DestroyAfterAnimation());
+    }
+
+    IEnumerator DestroyAfterAnimation()
+    {
+        yield return new WaitForSeconds(animator.GetCurrentAnimatorStateInfo(0).length);
+        RequestDestroy();
     }
 
     bool IsLookingAtPlayer()
     {
-        Vector3 toPlayer = (player.gameObject.transform.position - transform.position).normalized; // 좀비 → 플레이어 벡터
-        float dotProduct = Vector3.Dot(transform.forward, toPlayer); // 도트 프로덕트 계산
+        if (targetPlayer == null) return false;
 
-        float viewThreshold = Mathf.Cos(fieldOfViewAngle * 0.5f * Mathf.Deg2Rad); // 각도를 라디안으로 변환 후 코사인 값
-
-        return dotProduct >= viewThreshold; // 특정 값 이상이면 플레이어를 바라보는 중
+        Vector3 toPlayer = (targetPlayer.transform.position - transform.position).normalized;
+        float dotProduct = Vector3.Dot(transform.forward, toPlayer);
+        float viewThreshold = Mathf.Cos(fieldOfViewAngle * 0.5f * Mathf.Deg2Rad);
+        return dotProduct >= viewThreshold;
     }
 
-    private void Lotation_Zombie()
+    private void RotateTowardsPlayer()
     {
-        // 자연스럽게 플레이어 바라보기
-        Vector3 direction = (player.transform.position - transform.position).normalized;
+        if (targetPlayer == null) return;
+
+        Vector3 direction = (targetPlayer.transform.position - transform.position).normalized;
         Quaternion lookRotation = Quaternion.LookRotation(direction);
         transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, agent.angularSpeed * Time.deltaTime);
     }
+
+    public void Damage(float damage)
+    {
+        health -= damage;
+    }
+
     private void Animation()
     {
         if (animator == null) return;
@@ -117,6 +166,32 @@ public class ZombieController : MonoBehaviour
             case ZombieStates.Die:
                 animator.Play("Z_FallingForward");
                 break;
+        }
+    }
+
+    [PunRPC]
+    void DestroyZombie()
+    {
+        if (PhotonNetwork.IsMasterClient)
+        {
+            PhotonNetwork.Destroy(gameObject);
+        }
+    }
+
+    public void RequestDestroy()
+    {
+        if (photonView.IsMine)
+        {
+            PhotonNetwork.Destroy(gameObject);
+        }
+        else
+        {
+            // 소유권을 변경하고 삭제
+            photonView.TransferOwnership(PhotonNetwork.LocalPlayer);
+            PhotonNetwork.Destroy(gameObject);
+
+            // 또는 RPC 방식 사용
+            photonView.RPC("DestroyZombie", RpcTarget.MasterClient);
         }
     }
 }

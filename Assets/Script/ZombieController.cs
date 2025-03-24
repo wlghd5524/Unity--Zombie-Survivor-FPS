@@ -1,105 +1,155 @@
-using System.Collections;
+ï»¿using System.Collections;
+using Photon.Pun;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class ZombieController : MonoBehaviour
+public class ZombieController : MonoBehaviourPunCallbacks
 {
-    private enum ZombieStates           //Á»ºñ »óÅÂ
+    private enum ZombieStates
     {
-        Attack,         //°ø°İ
-        Die,            //Á×À½
-        Walking         //°È±â
+        Attack,
+        Die,
+        Walking
     }
 
-    ZombieStates state;      //Á»ºñ »óÅÂ °áÁ¤
+    ZombieStates state;
 
-    private PlayerController player = null;
-    private PlayerView playerView = null;
+    private GameObject targetPlayer = null; // ê°€ì¥ ê°€ê¹Œìš´ í”Œë ˆì´ì–´
     private Animator animator;
     private NavMeshAgent agent;
-    private float attack_Damage = 25.0f;         //Á»ºñ °ø°İ µ¥¹ÌÁö
-    public float distance = 0.0f;                //Á»ºñ¿ÍÀÇ °Å¸®
-    public float health = 100.0f;                //Á»ºñ Ã¼·Â
-    public float fieldOfViewAngle = 60f; // Á»ºñÀÇ ½Ã¾ß°¢ (¿¹: 60µµ)
+    private float attack_Damage = 25.0f;
+    public float distance = 0.0f;
+    public float health = 100.0f;
+    public float fieldOfViewAngle = 60f;
+    private bool isDead = false;
+    private Vector3 lastTargetPosition;
+    private PlayerController playerController;
 
+    private void Awake()
+    {
+        photonView.OwnershipTransfer = OwnershipOption.Takeover; // âœ… ìë™ ì†Œìœ ê¶Œ ì´ì „ ì„¤ì •
+    }
     private void Start()
     {
-        //ÇÃ·¹ÀÌ¾î Ã£±â
-        player = GameObject.Find("GameManager").GetComponent<GameManager>().go.GetComponent<PlayerController>();
-        playerView = GameObject.Find("PlayerView").GetComponent<PlayerView>();
         animator = GetComponent<Animator>();
         agent = GetComponent<NavMeshAgent>();
+
+        lastTargetPosition = transform.position;
+        FindClosestPlayer(); // ìµœì´ˆ ì‹¤í–‰ ì‹œ ê°€ì¥ ê°€ê¹Œìš´ í”Œë ˆì´ì–´ ì°¾ê¸°
     }
 
     void Update()
     {
-        // ´ë»óÀÌ ¾øÀ¸¸é ½ÇÇàÇÏÁö ¾ÊÀ½
-        if (player == null) return;
-        if (agent == null && agent.isStopped) return; 
-        if (playerView == null) return;
+        if (isDead) return;
 
-        // ÇÃ·¹ÀÌ¾î¿ÍÀÇ °Å¸® °è»ê
-        distance = Vector3.Distance(transform.position, player.transform.position);
+        if (targetPlayer == null)
+        {
+           
+            return;
+        }
+
+        FindClosestPlayer(); // ì¶”ì  ëŒ€ìƒì´ ì—†ìœ¼ë©´ ë‹¤ì‹œ ì°¾ê¸°
+
+        distance = Vector3.Distance(transform.position, targetPlayer.transform.position);
 
         if (distance > 2.0f)
         {
-            state = ZombieStates.Walking;       //°È±â
-            Lotation_Zombie();
-            agent.SetDestination(player.transform.position);
-        }
+            state = ZombieStates.Walking;
 
+            if (Vector3.Distance(lastTargetPosition, targetPlayer.transform.position) > 0.5f)
+            {
+                lastTargetPosition = targetPlayer.transform.position;
+                RotateTowardsPlayer();
+                agent.SetDestination(lastTargetPosition);
+            }
+        }
         else
         {
-            state = ZombieStates.Attack;        //°ø°İ
-        }
-        
-        //Á»ºñ°¡ ÇÃ·¹ÀÌ¾î¸¦ ¹Ù¶óº¸°í ÀÖÁö ¾ÊÀ»¶§
-        if(!IsLookingAtPlayer())
-        {
-            Lotation_Zombie();
+            state = ZombieStates.Attack;
         }
 
-        if (health <=0)
+        if (!IsLookingAtPlayer())
         {
-            state = ZombieStates.Die;
-            Rigidbody rd = GetComponent<Rigidbody>();
-            rd.isKinematic = true;
-            agent.isStopped = true;
+            RotateTowardsPlayer();
         }
-    
+
         Animation();
     }
 
-    public void Attack()           // °ø°İ ÇÔ¼ö
+    void FindClosestPlayer()
     {
-        if (playerView == null)
-            return;
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        float closestDistance = Mathf.Infinity;
+        GameObject closestPlayer = null;
 
-        player.Damage(attack_Damage);
+        foreach (GameObject player in players)
+        {
+            float playerDistance = Vector3.Distance(transform.position, player.transform.position);
+            if (playerDistance < closestDistance)
+            {
+                closestDistance = playerDistance;
+                closestPlayer = player;
+            }
+        }
+
+        targetPlayer = closestPlayer;
     }
 
-    public void Die()
-    {  
-        Destroy(gameObject);
+    public void Attack()
+    {
+        if (targetPlayer == null) return;
+        playerController = targetPlayer.GetComponent<PlayerController>();
+        if (playerController != null)
+        {
+            playerController.Damage(attack_Damage);
+        }
+    }
+
+    private void Die()
+    {
+        if (isDead) return;
+
+        state = ZombieStates.Die;
+        isDead = true;
+
+        Rigidbody rd = GetComponent<Rigidbody>();
+        if (rd != null) rd.isKinematic = true;
+        if (agent != null) agent.isStopped = true;
+
+        Animation();
+        StartCoroutine(DestroyAfterAnimation());
+    }
+
+    IEnumerator DestroyAfterAnimation()
+    {
+        yield return new WaitForSeconds(animator.GetCurrentAnimatorStateInfo(0).length);
+        RequestDestroy();
     }
 
     bool IsLookingAtPlayer()
     {
-        Vector3 toPlayer = (player.gameObject.transform.position - transform.position).normalized; // Á»ºñ ¡æ ÇÃ·¹ÀÌ¾î º¤ÅÍ
-        float dotProduct = Vector3.Dot(transform.forward, toPlayer); // µµÆ® ÇÁ·Î´öÆ® °è»ê
+        if (targetPlayer == null) return false;
 
-        float viewThreshold = Mathf.Cos(fieldOfViewAngle * 0.5f * Mathf.Deg2Rad); // °¢µµ¸¦ ¶óµğ¾ÈÀ¸·Î º¯È¯ ÈÄ ÄÚ»çÀÎ °ª
-
-        return dotProduct >= viewThreshold; // Æ¯Á¤ °ª ÀÌ»óÀÌ¸é ÇÃ·¹ÀÌ¾î¸¦ ¹Ù¶óº¸´Â Áß
+        Vector3 toPlayer = (targetPlayer.transform.position - transform.position).normalized;
+        float dotProduct = Vector3.Dot(transform.forward, toPlayer);
+        float viewThreshold = Mathf.Cos(fieldOfViewAngle * 0.5f * Mathf.Deg2Rad);
+        return dotProduct >= viewThreshold;
     }
 
-    private void Lotation_Zombie()
+    private void RotateTowardsPlayer()
     {
-        // ÀÚ¿¬½º·´°Ô ÇÃ·¹ÀÌ¾î ¹Ù¶óº¸±â
-        Vector3 direction = (player.transform.position - transform.position).normalized;
+        if (targetPlayer == null) return;
+
+        Vector3 direction = (targetPlayer.transform.position - transform.position).normalized;
         Quaternion lookRotation = Quaternion.LookRotation(direction);
         transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, agent.angularSpeed * Time.deltaTime);
     }
+
+    public void Damage(float damage)
+    {
+        health -= damage;
+    }
+
     private void Animation()
     {
         if (animator == null) return;
@@ -119,4 +169,41 @@ public class ZombieController : MonoBehaviour
                 break;
         }
     }
+
+    [PunRPC]
+    void DestroyZombie()
+    {
+        if (PhotonNetwork.IsMasterClient)
+        {
+            PhotonNetwork.Destroy(gameObject);
+        }
+    }
+
+    public void RequestDestroy()
+    {
+        if (photonView.IsMine)
+        {
+            PhotonNetwork.Destroy(gameObject);
+        }
+        else
+        {
+            // ì†Œìœ ê¶Œì„ ë³€ê²½í•˜ê³  ì‚­ì œ
+            photonView.TransferOwnership(PhotonNetwork.LocalPlayer);
+
+            // ë˜ëŠ” RPC ë°©ì‹ ì‚¬ìš©
+            photonView.RPC("DestroyZombie", RpcTarget.MasterClient);
+        }
+    }
+    [PunRPC]
+    public void TakeDamage(float damage)
+    {
+        health -= damage;
+        Debug.Log("ë‚¨ì€ ì¢€ë¹„ ì²´ë ¥: " + health);
+
+        if (health <= 0)
+        {
+            Die();
+        }
+    }
+
 }

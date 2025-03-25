@@ -3,7 +3,7 @@ using Photon.Pun;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class ZombieController : MonoBehaviourPunCallbacks
+public class ZombieController : MonoBehaviourPunCallbacks, IPunObservable
 {
     private enum ZombieStates
     {
@@ -21,59 +21,71 @@ public class ZombieController : MonoBehaviourPunCallbacks
     public float distance = 0.0f;
     public float health = 100.0f;
     public float fieldOfViewAngle = 60f;
-    private bool isDead = false;
     private Vector3 lastTargetPosition;
     private PlayerController playerController;
 
-    private void Awake()
-    {
-        photonView.OwnershipTransfer = OwnershipOption.Takeover; // ✅ 자동 소유권 이전 설정
-    }
+    //네트워크 동기화를 위한 변수들
+    private Vector3 networkPosition;
+    private Quaternion networkRotation;
+
     private void Start()
     {
         animator = GetComponent<Animator>();
         agent = GetComponent<NavMeshAgent>();
 
         lastTargetPosition = transform.position;
-        FindClosestPlayer(); // 최초 실행 시 가장 가까운 플레이어 찾기
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            FindClosestPlayer(); // 최초 실행 시 가장 가까운 플레이어 찾기
+        }
     }
 
     void Update()
     {
-        if (isDead) return;
+        if (state == ZombieStates.Die) return;
 
         if (targetPlayer == null)
         {
-           
             return;
         }
 
-        FindClosestPlayer(); // 추적 대상이 없으면 다시 찾기
-
-        distance = Vector3.Distance(transform.position, targetPlayer.transform.position);
-
-        if (distance > 2.0f)
+        if (PhotonNetwork.IsMasterClient)
         {
-            state = ZombieStates.Walking;
+            FindClosestPlayer(); // 추적 대상이 없으면 다시 찾기
 
-            if (Vector3.Distance(lastTargetPosition, targetPlayer.transform.position) > 0.5f)
+            distance = Vector3.Distance(transform.position, targetPlayer.transform.position);
+
+            if (distance > 2.0f)
             {
-                lastTargetPosition = targetPlayer.transform.position;
+                state = ZombieStates.Walking;
+                //animator.SetBool("IsWalking", true);
+                photonView.RPC("SetAnimation", RpcTarget.All, "IsWalking", true);
+
+                if (Vector3.Distance(lastTargetPosition, targetPlayer.transform.position) > 0.5f)
+                {
+                    lastTargetPosition = targetPlayer.transform.position;
+                    RotateTowardsPlayer();
+                    agent.SetDestination(lastTargetPosition);
+                }
+            }
+            else
+            {
+                state = ZombieStates.Attack;
+                //animator.SetTrigger("Attack");
+                photonView.RPC("SetAnimationTrigger", RpcTarget.All, "Attack");
+            }
+
+            if (!IsLookingAtPlayer())
+            {
                 RotateTowardsPlayer();
-                agent.SetDestination(lastTargetPosition);
             }
         }
         else
         {
-            state = ZombieStates.Attack;
+            transform.position = Vector3.Lerp(transform.position, networkPosition, Time.deltaTime * 10);
+            transform.rotation = Quaternion.Lerp(transform.rotation, networkRotation, Time.deltaTime * 10);
         }
-
-        if (!IsLookingAtPlayer())
-        {
-            RotateTowardsPlayer();
-        }
-
-        Animation();
     }
 
     void FindClosestPlayer()
@@ -107,23 +119,21 @@ public class ZombieController : MonoBehaviourPunCallbacks
 
     private void Die()
     {
-        if (isDead) return;
-
+        if (state == ZombieStates.Die) return;
+        //animator.SetBool("Dead", true);
+        photonView.RPC("SetAnimationTrigger", RpcTarget.All, "Dead");
         state = ZombieStates.Die;
-        isDead = true;
-
         Rigidbody rd = GetComponent<Rigidbody>();
         if (rd != null) rd.isKinematic = true;
         if (agent != null) agent.isStopped = true;
 
-        Animation();
         StartCoroutine(DestroyAfterAnimation());
     }
 
     IEnumerator DestroyAfterAnimation()
     {
         yield return new WaitForSeconds(animator.GetCurrentAnimatorStateInfo(0).length);
-        RequestDestroy();
+        PhotonNetwork.Destroy(gameObject);
     }
 
     bool IsLookingAtPlayer()
@@ -147,63 +157,50 @@ public class ZombieController : MonoBehaviourPunCallbacks
 
     public void Damage(float damage)
     {
+        if (!PhotonNetwork.IsMasterClient) return;
         health -= damage;
-    }
-
-    private void Animation()
-    {
-        if (animator == null) return;
-
-        switch (state)
-        {
-            case ZombieStates.Attack:
-                animator.Play("Z_Attack");
-                break;
-
-            case ZombieStates.Walking:
-                animator.Play("Z_Walk_InPlace");
-                break;
-
-            case ZombieStates.Die:
-                animator.Play("Z_FallingForward");
-                break;
-        }
-    }
-
-    [PunRPC]
-    void DestroyZombie()
-    {
-        if (PhotonNetwork.IsMasterClient)
-        {
-            PhotonNetwork.Destroy(gameObject);
-        }
-    }
-
-    public void RequestDestroy()
-    {
-        if (photonView.IsMine)
-        {
-            PhotonNetwork.Destroy(gameObject);
-        }
-        else
-        {
-            // 소유권을 변경하고 삭제
-            photonView.TransferOwnership(PhotonNetwork.LocalPlayer);
-
-            // 또는 RPC 방식 사용
-            photonView.RPC("DestroyZombie", RpcTarget.MasterClient);
-        }
-    }
-    [PunRPC]
-    public void TakeDamage(float damage)
-    {
-        health -= damage;
-        Debug.Log("남은 좀비 체력: " + health);
-
         if (health <= 0)
         {
             Die();
         }
     }
 
+    // 네트워크 동기화를 위한 메서드
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            // 마스터 클라이언트에서 데이터 전송
+            stream.SendNext(transform.position);
+            stream.SendNext(transform.rotation);
+            stream.SendNext(health);
+        }
+        else
+        {
+            // 클라이언트에서 데이터 수신
+            networkPosition = (Vector3)stream.ReceiveNext();
+            networkRotation = (Quaternion)stream.ReceiveNext();
+            health = (float)stream.ReceiveNext();
+        }
+    }
+
+    [PunRPC]
+    void SetAnimation(string parameter, bool value)
+    {
+        if(animator == null)
+        {
+            animator = GetComponent<Animator>();
+        }
+        animator.SetBool(parameter, value);
+    }
+
+    [PunRPC]
+    void SetAnimationTrigger(string parameter)
+    {
+        if (animator == null)
+        {
+            animator = GetComponent<Animator>();
+        }
+        animator.SetTrigger(parameter);
+    }
 }

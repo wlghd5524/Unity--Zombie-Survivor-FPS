@@ -1,7 +1,6 @@
 ﻿using Photon.Pun;
-using Photon.Pun.Demo.Asteroids;
+using System.Collections;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class Bullet : MonoBehaviourPunCallbacks
 {
@@ -15,14 +14,16 @@ public class Bullet : MonoBehaviourPunCallbacks
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        Destroy(gameObject, 5f);
+        if (photonView.IsMine)
+        {
+            StartCoroutine(DestroyTimer());
+        }
     }
-    public void Init(WeaponController weaponController = null)
+    public void Init()
     {
         rb.freezeRotation = true;
         rb.linearVelocity = shootDirection * speed;
         photonView.RPC("SyncBulletVelocity", RpcTarget.OthersBuffered, rb.linearVelocity);
-        this.weaponController = weaponController;
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -30,22 +31,24 @@ public class Bullet : MonoBehaviourPunCallbacks
         ZombieController zombie = collision.gameObject.GetComponent<ZombieController>();
         if (zombie != null)
         {
-            if (zombie.photonView.IsMine) // ✅ 소유권이 있으면 직접 호출
-            {
-                zombie.TakeDamage(weaponController.damage);
-            }
-            else // ✅ 소유권이 없으면 RPC 호출
-            {
-                zombie.photonView.RPC("TakeDamage", RpcTarget.All, weaponController.damage);
-            }
+            zombie.Damage(25f);
             Debug.Log("남은 좀비 체력 : " + zombie.health);
         }
-        PhotonNetwork.Destroy(gameObject);
+        if(photonView.IsMine)
+        {
+            PhotonNetwork.Destroy(gameObject);
+        }
     }
 
     [PunRPC]
     void SyncBulletVelocity(Vector3 velocity)
     {
         rb.linearVelocity = velocity;
+    }
+
+    IEnumerator DestroyTimer()
+    {
+        yield return new WaitForSeconds(5f);
+        PhotonNetwork.Destroy(gameObject);
     }
 }

@@ -654,6 +654,7 @@ GameObject:
   - component: {fileID: 9117400495793392058}
   - component: {fileID: 2437716158753316291}
   - component: {fileID: 1156060612603004891}
+  - component: {fileID: 2144573029920925256}
   m_Layer: 0
   m_Name: Zombie1
   m_TagString: Untagged
@@ -745,9 +746,10 @@ MonoBehaviour:
   prefixField: -1
   Synchronization: 3
   OwnershipTransfer: 0
-  observableSearch: 0
+  observableSearch: 2
   ObservedComponents:
-  - {fileID: 0}
+  - {fileID: 4365971920364872481}
+  - {fileID: 2144573029920925256}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -823,6 +825,22 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &2144573029920925256
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2409151671307572238}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SynchronizePosition: 1
+  m_SynchronizeRotation: 1
+  m_SynchronizeScale: 0
+  m_UseLocal: 1
 --- !u!1 &2528931867632098488
 GameObject:
   m_ObjectHideFlags: 0

@@ -44,7 +44,10 @@ public class ZombieSpawner : MonoBehaviourPunCallbacks
         // 랜덤한 스폰 위치 선택
         Transform spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Count)];
 
-        // 좀비 생성
-        PhotonNetwork.Instantiate("Zombie1", spawnPoint.position, spawnPoint.rotation);
+        if(PhotonNetwork.IsMasterClient)
+        {
+            // 좀비 생성
+            PhotonNetwork.Instantiate("Zombie1", spawnPoint.position, spawnPoint.rotation);
+        }
     }
 }

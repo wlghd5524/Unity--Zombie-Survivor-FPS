@@ -13,17 +13,16 @@ public class ZombieController : MonoBehaviourPunCallbacks, IPunObservable
     }
 
     ZombieStates state;
-
+    public ItemSO itemSO;
+    public ZombieSO zombie;
     private GameObject targetPlayer = null; // 가장 가까운 플레이어
     private Animator animator;
     private NavMeshAgent agent;
-    private float attack_Damage = 25.0f;
     public float distance = 0.0f;
-    public float health = 100.0f;
-    public float fieldOfViewAngle = 60f;
     private Vector3 lastTargetPosition;
     private PlayerController playerController;
 
+    public int health = 100;
     //네트워크 동기화를 위한 변수들
     private Vector3 networkPosition;
     private Quaternion networkRotation;
@@ -32,7 +31,6 @@ public class ZombieController : MonoBehaviourPunCallbacks, IPunObservable
     {
         animator = GetComponent<Animator>();
         agent = GetComponent<NavMeshAgent>();
-
         lastTargetPosition = transform.position;
 
         if (PhotonNetwork.IsMasterClient)
@@ -40,7 +38,7 @@ public class ZombieController : MonoBehaviourPunCallbacks, IPunObservable
             FindClosestPlayer(); // 최초 실행 시 가장 가까운 플레이어 찾기
         }
     }
-
+        
     void Update()
     {
         if (state == ZombieStates.Die) return;
@@ -56,7 +54,7 @@ public class ZombieController : MonoBehaviourPunCallbacks, IPunObservable
 
             distance = Vector3.Distance(transform.position, targetPlayer.transform.position);
 
-            if (distance > 2.0f)
+            if (distance > 1.5f)
             {
                 state = ZombieStates.Walking;
                 //animator.SetBool("IsWalking", true);
@@ -113,7 +111,7 @@ public class ZombieController : MonoBehaviourPunCallbacks, IPunObservable
         playerController = targetPlayer.GetComponent<PlayerController>();
         if (playerController != null)
         {
-            playerController.Damage(attack_Damage);
+            playerController.Damage(zombie.attack_Damage);
         }
     }
 
@@ -130,9 +128,22 @@ public class ZombieController : MonoBehaviourPunCallbacks, IPunObservable
         StartCoroutine(DestroyAfterAnimation());
     }
 
+    private string Random_Item()
+    {
+        int randomValue = Random.Range(0, 101);
+        Vector3 spawnPosition = transform.position + new Vector3(0, 1.0f, 0);
+
+        if (randomValue < 90)
+        {
+            int randomIndex = Random.Range(0, itemSO.dropItem.Length);
+            GameObject.Instantiate(itemSO.dropItem[randomIndex], spawnPosition, Quaternion.identity);
+        }
+        return null;
+    }
     IEnumerator DestroyAfterAnimation()
     {
         yield return new WaitForSeconds(animator.GetCurrentAnimatorStateInfo(0).length);
+        Random_Item();
         PhotonNetwork.Destroy(gameObject);
     }
 
@@ -142,7 +153,7 @@ public class ZombieController : MonoBehaviourPunCallbacks, IPunObservable
 
         Vector3 toPlayer = (targetPlayer.transform.position - transform.position).normalized;
         float dotProduct = Vector3.Dot(transform.forward, toPlayer);
-        float viewThreshold = Mathf.Cos(fieldOfViewAngle * 0.5f * Mathf.Deg2Rad);
+        float viewThreshold = Mathf.Cos(zombie.fieldOfViewAngle * 0.5f * Mathf.Deg2Rad);
         return dotProduct >= viewThreshold;
     }
 
@@ -155,10 +166,12 @@ public class ZombieController : MonoBehaviourPunCallbacks, IPunObservable
         transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, agent.angularSpeed * Time.deltaTime);
     }
 
-    public void Damage(float damage)
+    public void Damage(int damage, PlayerController player = null)
     {
         if (!PhotonNetwork.IsMasterClient) return;
         health -= damage;
+        //player.pv.hitUi.Play();
+
         if (health <= 0)
         {
             Die();
@@ -180,7 +193,7 @@ public class ZombieController : MonoBehaviourPunCallbacks, IPunObservable
             // 클라이언트에서 데이터 수신
             networkPosition = (Vector3)stream.ReceiveNext();
             networkRotation = (Quaternion)stream.ReceiveNext();
-            health = (float)stream.ReceiveNext();
+            health = (int)stream.ReceiveNext();
         }
     }
 

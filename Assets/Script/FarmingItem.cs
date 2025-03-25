@@ -5,10 +5,8 @@ public class FarmingItem: MonoBehaviourPunCallbacks
 {
     PlayerController _p;
     GameObject player;
-    float player_hp;
-    string object_name;
-    int Plistol_Ammo = 14;
-    int heal = 50;
+
+    public ItemSO itemSO;
 
     void OnCollisionEnter(Collision collision)
     {
@@ -19,11 +17,11 @@ public class FarmingItem: MonoBehaviourPunCallbacks
 
             Debug.Log("파밍 오브젝트와 플레이어 충돌");
 
-            if(gameObject.name == "Pistol")
+            if(gameObject.name.Contains("Pistol_Item"))
             {
                 PistolFunc();
             }
-            else if(gameObject.name == "Medkit")
+            else if(gameObject.name.Contains("Medkit"))
             {
                 MedkitFunc();
             }
@@ -32,14 +30,14 @@ public class FarmingItem: MonoBehaviourPunCallbacks
 
     void PistolFunc()
     {
-        player.GetComponent<PlayerController>().Reload(Plistol_Ammo);
+        player.GetComponent<PlayerController>().Reload(itemSO.add_Ammo);
         Destroy(gameObject);
     }
 
     void MedkitFunc()
     {
 
-        player.GetComponent<PlayerController>().Heal(heal);
+        player.GetComponent<PlayerController>().Heal(itemSO.mediKit_heal);
         Destroy(gameObject);
     }
 }

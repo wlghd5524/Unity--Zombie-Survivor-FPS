@@ -15,7 +15,7 @@ public class WeaponController : MonoBehaviourPunCallbacks
     [Tooltip("총 발사 사거리")]
     public float range = 100f;
     [Tooltip("한 발당 데미지")]
-    public float damage = 50f;
+    public int damage = 50;
 
     public int currentAmmo = 7;
     public int remaining_Ammo = 30; // 남은 탄약 개수

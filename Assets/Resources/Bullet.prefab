@@ -125,10 +125,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 891b7ec0a024660409589bb38ec8ba96, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 50
-  maxDistance: 100
-  lifetime: 3
   shootDirection: {x: 0, y: 0, z: 0}
+  bulletSO: {fileID: 11400000, guid: 9d8c60d256f22464cac2658adaa85ca7, type: 2}
   weaponController: {fileID: 0}
 --- !u!54 &8140792800889195643
 Rigidbody:

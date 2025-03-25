@@ -702,7 +702,7 @@ Animator:
   m_GameObject: {fileID: 2409151671307572238}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: 8f7380da49034cd488ddff94b1ac35d1, type: 3}
-  m_Controller: {fileID: 9100000, guid: 2ef8e6599b7f9934e8ff0d64c5325a1f, type: 2}
+  m_Controller: {fileID: 9100000, guid: 9056438d8425e444f8e432b8c69bcb3f, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 1
@@ -726,9 +726,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 41825e7700e582241a050acbe0d29bb0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  itemSO: {fileID: 11400000, guid: e88de8f7856e21b42af0838b2d0244f7, type: 2}
+  zombie: {fileID: 11400000, guid: cd325d1aedb436542a8cec58a4d29b87, type: 2}
   distance: 0
   health: 100
-  fieldOfViewAngle: 60
 --- !u!114 &8401083091134648303
 MonoBehaviour:
   m_ObjectHideFlags: 0

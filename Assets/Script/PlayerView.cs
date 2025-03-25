@@ -24,9 +24,8 @@ public class PlayerView : MonoBehaviour
     public GameObject healtext;             //회복량 텍스트 UI
     public GameObject Hp;              //체력 수치 나타내는 오브젝트 CurrentNumber
     public TextMeshProUGUI HpNumber;
-    private GameObject HpBar;               //체력바 Progress
-
-    
+    private GameObject HpBar;               //체력바 Progress              
+    public Animation hitUi;             //피격 모션
     private void Start()
     {
         child = transform;
@@ -43,13 +42,13 @@ public class PlayerView : MonoBehaviour
         HitTakenEffect = child.Find("HitTakenEffect").gameObject;
         ImmortalityIndicator = child.Find("ImmortalityIndicator").gameObject;
         healtext = Health.transform.Find("Heal").gameObject;
+        hitUi = child.Find("Crosshair/RegularHit").gameObject.GetComponent<Animation>();
 
         //활성화
         Health.SetActive(true);
         child.Find("Nickname").gameObject.SetActive(true);
         child.Find("Weapons").gameObject.SetActive(true);
         child.Find("Crosshair").gameObject.SetActive(true);
-        HealthBar.transform.Find("Background").Find("Deco").gameObject.SetActive(true);
 
         //비활성화
         DeathEffect.SetActive(false);

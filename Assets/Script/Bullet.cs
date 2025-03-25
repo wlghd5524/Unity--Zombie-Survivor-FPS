@@ -4,10 +4,8 @@ using UnityEngine;
 
 public class Bullet : MonoBehaviourPunCallbacks
 {
-    public float speed = 50f;
-    public float maxDistance = 100f;
-    public float lifetime = 3f;
     public Vector3 shootDirection;
+    public BulletSO bulletSO;
 
     public WeaponController weaponController;
     private Rigidbody rb;
@@ -22,7 +20,7 @@ public class Bullet : MonoBehaviourPunCallbacks
     public void Init()
     {
         rb.freezeRotation = true;
-        rb.linearVelocity = shootDirection * speed;
+        rb.linearVelocity = shootDirection * bulletSO.speed;
         photonView.RPC("SyncBulletVelocity", RpcTarget.OthersBuffered, rb.linearVelocity);
     }
 
@@ -31,12 +29,9 @@ public class Bullet : MonoBehaviourPunCallbacks
         ZombieController zombie = collision.gameObject.GetComponent<ZombieController>();
         if (zombie != null)
         {
-            zombie.Damage(25f);
+            PlayerController player = weaponController.gameObject.GetComponent<PlayerController>();
+            zombie.Damage(bulletSO.bullet_damage,player);
             Debug.Log("남은 좀비 체력 : " + zombie.health);
-        }
-        if(photonView.IsMine)
-        {
-            PhotonNetwork.Destroy(gameObject);
         }
     }
 

@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Photon.Pun;
-using UnityEngine.Rendering;
 
 public class PlayerController : MonoBehaviourPunCallbacks
 {
@@ -38,8 +37,9 @@ public class PlayerController : MonoBehaviourPunCallbacks
     public float max_hp = 100.0f;
     public float min_hp = 0.0f;
 
+    public PlayerView pv;
     GameObject playerView;
-    PlayerView pv;
+    
 
     private void Awake()
     {
@@ -115,15 +115,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
         }
     }
-    public void OnCanceld(InputAction.CallbackContext context)
-    {
-        if (!photonView.IsMine)
-            return;
 
-        if(context.canceled)
-            pv.Active_Menu();
-
-    }
     // 물리 기반 이동 및 중력 처리는 FixedUpdate에서 실행합니다.
     private void FixedUpdate()
     {
@@ -201,6 +193,19 @@ public class PlayerController : MonoBehaviourPunCallbacks
         {
             ChangeLayerRecursively(child, targetLayer, newLayer);
         }
+    }
+    /// <summary>
+    /// ESC 메뉴창 띄우기
+    /// </summary>
+    /// <param name="context"></param>
+    public void OnCanceld(InputAction.CallbackContext context)
+    {
+        if (!photonView.IsMine)
+            return;
+
+        if (context.canceled)
+            pv.Active_Menu();
+
     }
     /// <summary>
     /// 회복기능

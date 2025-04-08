@@ -10,11 +10,11 @@ public class WeaponController : MonoBehaviourPunCallbacks
     public Animator remoteAnimator;
 
     [Header("Shooting Settings")]
-    [Tooltip("1ÀÎÄª Ä«¸Ş¶ó (·¹ÀÌÄ³½ºÆ® ±âÁØ)")]
+    [Tooltip("1ì¸ì¹­ ì¹´ë©”ë¼ (ë ˆì´ìºìŠ¤íŠ¸ ê¸°ì¤€)")]
     public Camera fpsCamera;
-    [Tooltip("ÃÑ ¹ß»ç »ç°Å¸®")]
+    [Tooltip("ì´ ë°œì‚¬ ì‚¬ê±°ë¦¬")]
     public float range = 100f;
-    [Tooltip("ÇÑ ¹ß´ç µ¥¹ÌÁö")]
+    [Tooltip("í•œ ë°œë‹¹ ë°ë¯¸ì§€")]
     public float damage = 50f;
 
     public int currentAmmo = 7;
@@ -31,21 +31,19 @@ public class WeaponController : MonoBehaviourPunCallbacks
     public AudioClip dryFireAudioClip;
 
     private PlayerView playerView;
-    private Change_Ammo_UI change_Ammo_UI;
 
     void Start()
     {
         fpsCamera = FindFirstObjectByType<Camera>();
         GetComponent<PlayerInput>().camera = fpsCamera;
         playerView = GameObject.Find("PlayerView").GetComponent<PlayerView>();
-        change_Ammo_UI = playerView.gameObject.GetComponent<Change_Ammo_UI>();
     }
 
 
 
     /// <summary>
-    /// »õ·Î¿î Input SystemÀ» »ç¿ëÇÒ ¶§, Player Input ÄÄÆ÷³ÍÆ®°¡ "Fire" ¾×¼Ç¿¡ ´ëÇØ È£ÃâÇÏ´Â ¸Ş¼­µå.
-    /// Send Messages ¶Ç´Â Unity Events ¸ğµå·Î ¿¬°áµÇ¾î ÀÖ¾î¾ß ÇÕ´Ï´Ù.
+    /// ìƒˆë¡œìš´ Input Systemì„ ì‚¬ìš©í•  ë•Œ, Player Input ì»´í¬ë„ŒíŠ¸ê°€ "Fire" ì•¡ì…˜ì— ëŒ€í•´ í˜¸ì¶œí•˜ëŠ” ë©”ì„œë“œ.
+    /// Send Messages ë˜ëŠ” Unity Events ëª¨ë“œë¡œ ì—°ê²°ë˜ì–´ ìˆì–´ì•¼ í•©ë‹ˆë‹¤.
     /// </summary>
     public void OnFire(InputAction.CallbackContext context)
     {
@@ -71,8 +69,8 @@ public class WeaponController : MonoBehaviourPunCallbacks
 
 
     /// <summary>
-    /// Player Input ÄÄÆ÷³ÍÆ®°¡ "Reload" ¾×¼Ç¿¡ ´ëÇØ È£ÃâÇÏ´Â ¸Ş¼­µå.
-    /// RÅ°¿¡ ¹ÙÀÎµùÇÏ¿© ÀçÀåÀü ±â´ÉÀ» ±¸ÇöÇÕ´Ï´Ù.
+    /// Player Input ì»´í¬ë„ŒíŠ¸ê°€ "Reload" ì•¡ì…˜ì— ëŒ€í•´ í˜¸ì¶œí•˜ëŠ” ë©”ì„œë“œ.
+    /// Rí‚¤ì— ë°”ì¸ë”©í•˜ì—¬ ì¬ì¥ì „ ê¸°ëŠ¥ì„ êµ¬í˜„í•©ë‹ˆë‹¤.
     /// </summary>
     public void OnReload(InputAction.CallbackContext context)
     {
@@ -91,7 +89,7 @@ public class WeaponController : MonoBehaviourPunCallbacks
 
 
     /// <summary>
-    /// ÃÑÀ» ¹ß»çÇÏ´Â ·ÎÁ÷
+    /// ì´ì„ ë°œì‚¬í•˜ëŠ” ë¡œì§
     /// </summary>
     void Shoot()
     {
@@ -101,9 +99,9 @@ public class WeaponController : MonoBehaviourPunCallbacks
         remoteAnimator.SetTrigger("Fire");
 
         currentAmmo--;
-        change_Ammo_UI.Change_UI(currentAmmo, maxAmmo);
+        playerView.UpdateAmmoUI(currentAmmo, maxAmmo);
 
-        // È­¸é Áß¾Ó¿¡¼­ ·¹ÀÌÄ³½ºÆ®¸¦ ¼öÇàÇÏ¿© Á¤È®ÇÑ Ãæµ¹ÁöÁ¡À» ±¸ÇÕ´Ï´Ù.
+        // í™”ë©´ ì¤‘ì•™ì—ì„œ ë ˆì´ìºìŠ¤íŠ¸ë¥¼ ìˆ˜í–‰í•˜ì—¬ ì •í™•í•œ ì¶©ëŒì§€ì ì„ êµ¬í•©ë‹ˆë‹¤.
         Vector3 rayOrigin = fpsCamera.transform.position;
         Vector3 rayDirection = fpsCamera.transform.forward;
 
@@ -112,15 +110,15 @@ public class WeaponController : MonoBehaviourPunCallbacks
 
         if (Physics.Raycast(rayOrigin, rayDirection, out hit, 1000f))
         {
-            targetPoint = hit.point;  // Ãæµ¹ ÁöÁ¡ÀÌ ÀÖ´Ù¸é, ±×°÷À» Å¸°ÙÀ¸·Î ÁöÁ¤
+            targetPoint = hit.point;  // ì¶©ëŒ ì§€ì ì´ ìˆë‹¤ë©´, ê·¸ê³³ì„ íƒ€ê²Ÿìœ¼ë¡œ ì§€ì •
         }
         else
         {
-            // ¾Æ¹«°Íµµ Ãæµ¹ÇÏÁö ¾Ê¾Ò´Ù¸é ¸Õ ÁöÁ¡À» Å¸°ÙÀ¸·Î ÁöÁ¤
+            // ì•„ë¬´ê²ƒë„ ì¶©ëŒí•˜ì§€ ì•Šì•˜ë‹¤ë©´ ë¨¼ ì§€ì ì„ íƒ€ê²Ÿìœ¼ë¡œ ì§€ì •
             targetPoint = rayOrigin + rayDirection * 100f;
         }
 
-        // ½ÇÁ¦ ÃÑ¾ËÀº Ä«¸Ş¶ó¿¡¼­ ¹ß»ç
+        // ì‹¤ì œ ì´ì•Œì€ ì¹´ë©”ë¼ì—ì„œ ë°œì‚¬
         Vector3 shootOrigin = bulletSpawnPoint.position;
         Vector3 shootDirection = (targetPoint - bulletSpawnPoint.position).normalized;
 
@@ -132,7 +130,7 @@ public class WeaponController : MonoBehaviourPunCallbacks
     }
 
     /// <summary>
-    /// ÀçÀåÀü ÄÚ·çÆ¾: ÀçÀåÀü ¾Ö´Ï¸ŞÀÌ¼ÇÀ» Àç»ıÇÑ ÈÄ ÀÏÁ¤ ½Ã°£ ´ë±âÇÏ°í, ÃÑ¾Ë ¼ö¸¦ ¸®¼ÂÇÕ´Ï´Ù.
+    /// ì¬ì¥ì „ ì½”ë£¨í‹´: ì¬ì¥ì „ ì• ë‹ˆë©”ì´ì…˜ì„ ì¬ìƒí•œ í›„ ì¼ì • ì‹œê°„ ëŒ€ê¸°í•˜ê³ , ì´ì•Œ ìˆ˜ë¥¼ ë¦¬ì…‹í•©ë‹ˆë‹¤.
     /// </summary>
     private IEnumerator ReloadCoroutine()
     {
@@ -141,16 +139,17 @@ public class WeaponController : MonoBehaviourPunCallbacks
         audioSource.Play();
         localAnimator.SetBool("IsReloading", true);
         remoteAnimator.SetBool("IsReloading", true);
-        // ¾Ö´Ï¸ŞÀÌÅÍ°¡ "Reload" »óÅÂÀÌ¸ç, ±× Àç»ıÀÌ ³¡³¯ ¶§±îÁö ´ë±â
+        // ì• ë‹ˆë©”ì´í„°ê°€ "Reload" ìƒíƒœì´ë©°, ê·¸ ì¬ìƒì´ ëë‚  ë•Œê¹Œì§€ ëŒ€ê¸°
         yield return new WaitUntil(() =>
         {
             AnimatorStateInfo stateInfo = localAnimator.GetCurrentAnimatorStateInfo(0);
             return stateInfo.IsName("Reload") && stateInfo.normalizedTime >= 1.0f;
         });
+        
         localAnimator.SetBool("IsReloading", false);
         remoteAnimator.SetBool("IsReloading", false);
         currentAmmo = maxAmmo;
-        change_Ammo_UI.Basic_UI(currentAmmo,maxAmmo);
+        playerView.ResetAmmoUI(maxAmmo);
         isReloading = false;
     }
 }

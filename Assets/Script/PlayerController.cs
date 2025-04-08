@@ -6,26 +6,26 @@ using UnityEngine.Rendering;
 public class PlayerController : MonoBehaviourPunCallbacks
 {
     [Header("Movement Settings")]
-    [Tooltip("ÇÃ·¹ÀÌ¾î ÀÌµ¿ ¼Óµµ")]
+    [Tooltip("í”Œë ˆì´ì–´ ì´ë™ ì†ë„")]
     public float moveSpeed = 5f;
 
     [Header("Jump Settings")]
-    [Tooltip("Á¡ÇÁ Èû (¾ç¼ö °ª)")]
+    [Tooltip("ì í”„ í˜ (ì–‘ìˆ˜ ê°’)")]
     public float jumpForce = 50f;
-    [Tooltip("¹Ù´Ú ÆÇÁ¤À» À§ÇÑ ·¹ÀÌÄ³½ºÆ® °Å¸®")]
+    [Tooltip("ë°”ë‹¥ íŒì •ì„ ìœ„í•œ ë ˆì´ìºìŠ¤íŠ¸ ê±°ë¦¬")]
     public float groundCheckDistance = 0.2f;
 
     [Header("Look Settings")]
-    [Tooltip("¸¶¿ì½º °¨µµ")]
+    [Tooltip("ë§ˆìš°ìŠ¤ ê°ë„")]
     public float lookSensitivity = 1f;
-    [Tooltip("Ä«¸Ş¶óÀÇ ¼öÁ÷ È¸Àü Á¦ÇÑ (°¢µµ)")]
+    [Tooltip("ì¹´ë©”ë¼ì˜ ìˆ˜ì§ íšŒì „ ì œí•œ (ê°ë„)")]
     public float verticalRotationLimit = 80f;
 
     [Header("Camera Reference")]
-    [Tooltip("ÇÃ·¹ÀÌ¾î ÀÚ½Ä¿¡ ¹èÄ¡ÇÑ FPS Ä«¸Ş¶óÀÇ Transform")]
+    [Tooltip("í”Œë ˆì´ì–´ ìì‹ì— ë°°ì¹˜í•œ FPS ì¹´ë©”ë¼ì˜ Transform")]
     public Transform cameraTransform;
 
-    // ³»ºÎ¿¡¼­ ÀúÀåÇÒ ÀÔ·Â °ª
+    // ë‚´ë¶€ì—ì„œ ì €ì¥í•  ì…ë ¥ ê°’
     private Vector2 moveInput;
     private Vector2 lookInput;
     private float verticalRotation = 0f;
@@ -33,7 +33,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
     private Rigidbody rb;
     private Animator animator;
 
-    // Ã¼·Â 
+    // ì²´ë ¥ 
     public float current_hp = 100.0f;
     public float max_hp = 100.0f;
     public float min_hp = 0.0f;
@@ -44,7 +44,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        // Rigidbody°¡ ¿ÜºÎ Èû¿¡ ÀÇÇÑ È¸ÀüÀ» ÀÚµ¿À¸·Î Àû¿ëÇÏÁö ¾Êµµ·Ï È¸Àü ÃàÀ» µ¿°áÇÕ´Ï´Ù.
+        // Rigidbodyê°€ ì™¸ë¶€ í˜ì— ì˜í•œ íšŒì „ì„ ìë™ìœ¼ë¡œ ì ìš©í•˜ì§€ ì•Šë„ë¡ íšŒì „ ì¶•ì„ ë™ê²°í•©ë‹ˆë‹¤.
         rb.freezeRotation = true;
 
         animator = GetComponent<Animator>();
@@ -56,7 +56,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
         if (photonView.IsMine)
         {
-            // °ÔÀÓ ½ÃÀÛ ½Ã Ä¿¼­ ¼û±è ¹× Àá±İ
+            // ê²Œì„ ì‹œì‘ ì‹œ ì»¤ì„œ ìˆ¨ê¹€ ë° ì ê¸ˆ
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
@@ -66,16 +66,16 @@ public class PlayerController : MonoBehaviourPunCallbacks
             {
                 cameraTransform.gameObject.SetActive(false);
 
-                // ¿ø°İ ÇÃ·¹ÀÌ¾îÀÏ °æ¿ì, LocalPlayer ·¹ÀÌ¾î¸¦ RemotePlayer ·¹ÀÌ¾î·Î º¯°æ
+                // ì›ê²© í”Œë ˆì´ì–´ì¼ ê²½ìš°, LocalPlayer ë ˆì´ì–´ë¥¼ RemotePlayer ë ˆì´ì–´ë¡œ ë³€ê²½
                 ChangeLayerRecursively(transform, LayerMask.NameToLayer("LocalPlayer"), LayerMask.NameToLayer("RemotePlayer"));
             }
         }
     }
 
-    // Player Input ÄÄÆ÷³ÍÆ®°¡ Send Messages È¤Àº Unity Events·Î È£ÃâÇÒ ¶§ ½ÇÇàµÇ´Â ¸Ş¼­µåµé
+    // Player Input ì»´í¬ë„ŒíŠ¸ê°€ Send Messages í˜¹ì€ Unity Eventsë¡œ í˜¸ì¶œí•  ë•Œ ì‹¤í–‰ë˜ëŠ” ë©”ì„œë“œë“¤
 
     /// <summary>
-    /// "Move" ¾×¼Ç¿¡ ¿¬°áµÈ ÀÔ·Â ÀÌº¥Æ®
+    /// "Move" ì•¡ì…˜ì— ì—°ê²°ëœ ì…ë ¥ ì´ë²¤íŠ¸
     /// </summary>
     public void OnMove(InputAction.CallbackContext context)
     {
@@ -88,7 +88,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
     }
 
     /// <summary>
-    /// "Look" ¾×¼Ç¿¡ ¿¬°áµÈ ÀÔ·Â ÀÌº¥Æ®
+    /// "Look" ì•¡ì…˜ì— ì—°ê²°ëœ ì…ë ¥ ì´ë²¤íŠ¸
     /// </summary>
     public void OnLook(InputAction.CallbackContext context)
     {
@@ -101,13 +101,13 @@ public class PlayerController : MonoBehaviourPunCallbacks
     }
 
     /// <summary>
-    /// "Jump" ¾×¼Ç¿¡ ¿¬°áµÈ ÀÔ·Â ÀÌº¥Æ®
+    /// "Jump" ì•¡ì…˜ì— ì—°ê²°ëœ ì…ë ¥ ì´ë²¤íŠ¸
     /// </summary>
     public void OnJump(InputAction.CallbackContext context)
     {
         if (!photonView.IsMine)
             return;
-        // Á¡ÇÁ ÀÔ·ÂÀÌ performed »óÅÂÀÌ°í, ¹Ù´Ú¿¡ ´ê¾Æ ÀÖÀ» ¶§¸¸ Á¡ÇÁ Ã³¸®
+        // ì í”„ ì…ë ¥ì´ performed ìƒíƒœì´ê³ , ë°”ë‹¥ì— ë‹¿ì•„ ìˆì„ ë•Œë§Œ ì í”„ ì²˜ë¦¬
         if (context.performed && IsGrounded())
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
@@ -124,7 +124,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
             pv.Active_Menu();
 
     }
-    // ¹°¸® ±â¹İ ÀÌµ¿ ¹× Áß·Â Ã³¸®´Â FixedUpdate¿¡¼­ ½ÇÇàÇÕ´Ï´Ù.
+    // ë¬¼ë¦¬ ê¸°ë°˜ ì´ë™ ë° ì¤‘ë ¥ ì²˜ë¦¬ëŠ” FixedUpdateì—ì„œ ì‹¤í–‰í•©ë‹ˆë‹¤.
     private void FixedUpdate()
     {
         if (!photonView.IsMine)
@@ -133,7 +133,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
         UpdateAnimation();
     }
 
-    // È¸Àü(½ÃÁ¡) Ã³¸®´Â Update¿¡¼­ ½ÇÇàÇÕ´Ï´Ù.
+    // íšŒì „(ì‹œì ) ì²˜ë¦¬ëŠ” Updateì—ì„œ ì‹¤í–‰í•©ë‹ˆë‹¤.
     private void Update()
     {
         if (!photonView.IsMine)
@@ -142,11 +142,11 @@ public class PlayerController : MonoBehaviourPunCallbacks
     }
 
     /// <summary>
-    /// ÀÔ·ÂµÈ ÀÌµ¿ °ª°ú ¼öÁ÷ ¼Óµµ¸¦ ¹İ¿µÇÏ¿© ÀÌµ¿ Ã³¸®
+    /// ì…ë ¥ëœ ì´ë™ ê°’ê³¼ ìˆ˜ì§ ì†ë„ë¥¼ ë°˜ì˜í•˜ì—¬ ì´ë™ ì²˜ë¦¬
     /// </summary>
     private void HandleMovement()
     {
-        // ÇÃ·¹ÀÌ¾îÀÇ ¿À¸¥ÂÊ°ú ¾ÕÂÊ º¤ÅÍ¸¦ ±âÁØÀ¸·Î ¼öÆò ÀÌµ¿ ¹æÇâ °è»ê
+        // í”Œë ˆì´ì–´ì˜ ì˜¤ë¥¸ìª½ê³¼ ì•ìª½ ë²¡í„°ë¥¼ ê¸°ì¤€ìœ¼ë¡œ ìˆ˜í‰ ì´ë™ ë°©í–¥ ê³„ì‚°
         Vector3 moveDirection = (transform.right * moveInput.x + transform.forward * moveInput.y).normalized;
         Vector3 horizontalMovement = moveDirection * moveSpeed * Time.fixedDeltaTime;
         rb.MovePosition(rb.position + horizontalMovement);
@@ -157,14 +157,14 @@ public class PlayerController : MonoBehaviourPunCallbacks
     }
 
     /// <summary>
-    /// ÀÔ·ÂµÈ ¸¶¿ì½º °ª¿¡ µû¶ó ÇÃ·¹ÀÌ¾î¿Í Ä«¸Ş¶ó È¸Àü Ã³¸®
+    /// ì…ë ¥ëœ ë§ˆìš°ìŠ¤ ê°’ì— ë”°ë¼ í”Œë ˆì´ì–´ì™€ ì¹´ë©”ë¼ íšŒì „ ì²˜ë¦¬
     /// </summary>
     private void HandleLook()
     {
-        // ÁÂ¿ì È¸Àü: ÇÃ·¹ÀÌ¾î GameObject ÀÚÃ¼¸¦ YÃà ±âÁØÀ¸·Î È¸Àü
+        // ì¢Œìš° íšŒì „: í”Œë ˆì´ì–´ GameObject ìì²´ë¥¼ Yì¶• ê¸°ì¤€ìœ¼ë¡œ íšŒì „
         transform.Rotate(Vector3.up, lookInput.x * lookSensitivity);
 
-        // »óÇÏ È¸Àü: ´©Àû È¸Àü°ªÀ» ±â¹İÀ¸·Î Ä«¸Ş¶óÀÇ ÇÇÄ¡(pitch) Á¶Àı
+        // ìƒí•˜ íšŒì „: ëˆ„ì  íšŒì „ê°’ì„ ê¸°ë°˜ìœ¼ë¡œ ì¹´ë©”ë¼ì˜ í”¼ì¹˜(pitch) ì¡°ì ˆ
         verticalRotation -= lookInput.y * lookSensitivity;
         verticalRotation = Mathf.Clamp(verticalRotation, -verticalRotationLimit, verticalRotationLimit);
 
@@ -184,7 +184,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
     }
 
     /// <summary>
-    /// ¹Ù´Ú ÆÇÁ¤À» À§ÇØ ÇÃ·¹ÀÌ¾î ¾Æ·¡·Î ·¹ÀÌÄ³½ºÆ®¸¦ ½ÇÇà
+    /// ë°”ë‹¥ íŒì •ì„ ìœ„í•´ í”Œë ˆì´ì–´ ì•„ë˜ë¡œ ë ˆì´ìºìŠ¤íŠ¸ë¥¼ ì‹¤í–‰
     /// </summary>
     private bool IsGrounded()
     {
@@ -203,7 +203,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
         }
     }
     /// <summary>
-    /// È¸º¹±â´É
+    /// íšŒë³µê¸°ëŠ¥
     /// </summary>
     public void Heal()
     {
@@ -218,7 +218,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
         pv.Heal(current_hp, before_hp, max_hp);
     }
     /// <summary>
-    /// ´ë¹ÌÁö±â´É
+    /// ëŒ€ë¯¸ì§€ê¸°ëŠ¥
     /// </summary>
     /// <param name="damage"></param>
     public void Damage(float damage)
@@ -234,7 +234,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
         pv.Damage(current_hp);
     }
     /// <summary>
-    /// »ç¸ÁÇÔ¼ö
+    /// ì‚¬ë§í•¨ìˆ˜
     /// </summary>
     private void Dead()
     {

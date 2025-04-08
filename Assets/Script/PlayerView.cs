@@ -2,56 +2,75 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.HID;
-
 public class PlayerView : MonoBehaviour
 {
-    public GameObject menu;                //¸Ş´º
-   
-    [SerializeField]
-    GameManager gameManager;
+    [Header("Menu")]
+    public GameObject menu;
 
-    public GameObject player = null;     //ÇÃ·¹ÀÌ¾î ¿ÀºêÁ§Æ®
-
-    private Transform child;           //ÀÚ½Ä ¿ÀºêÁ§Æ®
-    private GameObject Health;         //Health ¿ÀºêÁ§Æ®
-    private GameObject DeathEffect;    //»ç¸ÁÈ¿°ú ¿ÀºêÁ§Æ®
-    public GameObject HitDirections;   //hit È¿°ú
-    public GameObject HitTakenEffect;   //hit È¿°ú(°­È­¹öÀü)
-    public GameObject ImmortalityIndicator;     //È¸º¹È¿°ú
+    [Header("Health UI")]
+    private GameObject Health;
     public GameObject HealthBar;
-    public GameObject healtext;             //È¸º¹·® ÅØ½ºÆ® UI
-    public GameObject Hp;              //Ã¼·Â ¼öÄ¡ ³ªÅ¸³»´Â ¿ÀºêÁ§Æ® CurrentNumber
+    public GameObject healtext;             //íšŒë³µëŸ‰ í…ìŠ¤íŠ¸ UI
+    public GameObject Hp;              //ì²´ë ¥ ìˆ˜ì¹˜ ë‚˜íƒ€ë‚´ëŠ” ì˜¤ë¸Œì íŠ¸ CurrentNumber
     public TextMeshProUGUI HpNumber;
-    private GameObject HpBar;               //Ã¼·Â¹Ù Progress
+    private GameObject HpBar;
 
-    
+    [Header("Effect UI")]
+    private GameObject DeathEffect;
+    public GameObject HitDirections;
+    public GameObject HitTakenEffect;
+    public GameObject ImmortalityIndicator;
+
+    [Header("Ammo UI")]
+    [SerializeField] private GameObject max_Ammo;
+    [SerializeField] private GameObject current_Ammo;
+    [SerializeField] private GameObject fill_Amount;
+    private TextMeshProUGUI ammoMaxText;
+    private TextMeshProUGUI ammoCurrentText;
+
+    private Transform child;
+
     private void Start()
     {
+        InitializeReferences();
+        InitializeUI();
+        SetupAmmoUI();
+    }
+
+    private void InitializeReferences()
+    {
         child = transform;
-        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
-        player = gameManager.go;
-     
+
+        // Health UI ì°¸ì¡°
         Health = child.Find("Health").gameObject;
         HitDirections = child.Find("HitDirections").gameObject;
         DeathEffect = child.Find("DeathEffect").gameObject;
         HealthBar = Health.transform.Find("HealthBar").gameObject;
         Hp = Health.transform.Find("HealthGroup").Find("CurrentNumber").gameObject;
         HpNumber = Hp.GetComponent<TextMeshProUGUI>();
-        HpNumber.text = player.GetComponent<PlayerController>().max_hp.ToString();
+        HpNumber.text = GameManager.Instance.player.GetComponent<PlayerController>().max_hp.ToString();
+        
+        // Effect UI ì°¸ì¡°
         HitTakenEffect = child.Find("HitTakenEffect").gameObject;
         ImmortalityIndicator = child.Find("ImmortalityIndicator").gameObject;
         healtext = Health.transform.Find("Heal").gameObject;
 
-        //È°¼ºÈ­
+        // Ammo UI ì°¸ì¡°
+        max_Ammo = child.Find("Weapons/CurrentWeapon/WeaponInfo/AmmoGroup/MaxNumber").gameObject;
+        current_Ammo = child.Find("Weapons/CurrentWeapon/WeaponInfo/AmmoGroup/CurrentNumber").gameObject;
+        fill_Amount = child.Find("Weapons/CurrentWeapon/WeaponBox/BarGroup/Progress").gameObject;
+    }
+
+    private void InitializeUI()
+    {
+        // UI í™œì„±í™”
         Health.SetActive(true);
         child.Find("Nickname").gameObject.SetActive(true);
         child.Find("Weapons").gameObject.SetActive(true);
         child.Find("Crosshair").gameObject.SetActive(true);
         HealthBar.transform.Find("Background").Find("Deco").gameObject.SetActive(true);
 
-        //ºñÈ°¼ºÈ­
+        // UI ë¹„í™œì„±í™”
         DeathEffect.SetActive(false);
         HitDirections.SetActive(false);
         child.Find("NoAmmoGroup").gameObject.SetActive(false);
@@ -60,41 +79,62 @@ public class PlayerView : MonoBehaviour
         ImmortalityIndicator.SetActive(false);
         healtext.SetActive(false);
 
+        // ì²´ë ¥ë°” ì´ˆê¸°í™”
         HpBar = Health.transform.Find("HealthBar").transform.Find("Progress").gameObject;
         HpBar.GetComponent<Image>().fillAmount = 1.0f;
 
-        menu.SetActive(false);              //¸Ş´º ºñÈ°¼ºÈ­
-
-        gameObject.GetComponent<Change_Ammo_UI>().init();
+        menu.SetActive(false);
     }
 
-    //´ë¹ÌÁö ÇÔ¼ö
+    private void SetupAmmoUI()
+    {
+        ammoMaxText = max_Ammo.GetComponent<TextMeshProUGUI>();
+        ammoCurrentText = current_Ammo.GetComponent<TextMeshProUGUI>();
+        WeaponController weapon = GameManager.Instance.player.GetComponent<WeaponController>();
+        UpdateAmmoUI(weapon.currentAmmo, weapon.maxAmmo);
+    }
+
+    public void UpdateAmmoUI(int currentAmmo, int maxAmmo)
+    {
+        ammoCurrentText.text = currentAmmo.ToString("D3");
+        ammoMaxText.text = maxAmmo.ToString("D3");
+        float fillAmount = currentAmmo > 0 ? (float)currentAmmo / maxAmmo : 0f;
+        fill_Amount.GetComponent<Image>().fillAmount = fillAmount;
+    }
+
+    public void ResetAmmoUI(int maxAmmo)
+    {
+        fill_Amount.GetComponent<Image>().fillAmount = 1.0f;
+        string ammoText = maxAmmo.ToString("D3");
+        ammoMaxText.text = ammoText;
+        ammoCurrentText.text = ammoText;
+    }
+
     public void Damage(float current_hp)
     {
         Hp_Bar_Change(current_hp);
 
-        //¿ÀºêÁ§Æ® È°¼ºÈ­ ºñÈ°¼ºÈ­ ÄÚµå
+        //ì˜¤ë¸Œì íŠ¸ í™œì„±í™” ë¹„í™œì„±í™” ì½”ë“œ
         if (current_hp <= 25)
             StartCoroutine(ActivateTemporarily(HitTakenEffect));
         else
             StartCoroutine(ActivateTemporarily(HitDirections));      
-
     }
 
     IEnumerator ActivateTemporarily(GameObject ui_object, bool destory_ui = false)
     {
-        ui_object.SetActive(true);  //¿ÀºêÁ§Æ® È°¼ºÈ­
-        yield return new WaitForSeconds(2.0f); // 1.5ÃÊ ´ë±â
-        ui_object.SetActive(false); // ¿ÀºêÁ§Æ® ºñÈ°¼ºÈ­
+        ui_object.SetActive(true);  //ì˜¤ë¸Œì íŠ¸ í™œì„±í™”
+        yield return new WaitForSeconds(2.0f); // 1.5ì´ˆ ëŒ€ê¸°
+        ui_object.SetActive(false); // ì˜¤ë¸Œì íŠ¸ ë¹„í™œì„±í™”
     }
 
-    //»ç¸ÁÇÔ¼ö
+    //ì‚¬ë§í•¨ìˆ˜
     public void Dead()
     {
         DeathEffect.SetActive(true);
     }
 
-    //È¸º¹ È¿°ú
+    //íšŒë³µ íš¨ê³¼
     public void Heal(float current_hp, float before_hp, float max_hp)
     {
         Hp_Bar_Change(current_hp);
@@ -108,19 +148,20 @@ public class PlayerView : MonoBehaviour
         StartCoroutine(ActivateTemporarily(healtext));
     }
 
-    //Hp_bar º¯°æ
+    //Hp_bar ë³€ê²½
     private void Hp_Bar_Change(float current_hp)
     {
         if (HpNumber == null)
             HpNumber = Hp.GetComponent<TextMeshProUGUI>();
 
-        HpNumber.text = current_hp.ToString();        //ÇöÀç Ã¼·Â¼öÄ¡ UIº¯°æ
+        HpNumber.text = current_hp.ToString();        //í˜„ì¬ ì²´ë ¥ìˆ˜ì¹˜ UIë³€ê²½
 
         if (HpBar == null)
             HpBar = transform.Find("Progress").gameObject;
 
-        HpBar.GetComponent<Image>().fillAmount = current_hp / 100;     //Ã¼·Â¹Ù Á¶Àı
+        HpBar.GetComponent<Image>().fillAmount = current_hp / 100;     //ì²´ë ¥ë°” ì¡°ì ˆ
     }
+
     public void Active_Menu()
     {
         if (menu == null)
@@ -131,19 +172,16 @@ public class PlayerView : MonoBehaviour
             menu.SetActive(false);
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
-            player.GetComponent<PlayerController>().enabled = true;
-            player.GetComponent<WeaponController>().enabled = true;
-            gameObject.GetComponent<Change_Ammo_UI>().enabled = true;
+            GameManager.Instance.player.GetComponent<PlayerController>().enabled = true;
+            GameManager.Instance.player.GetComponent<WeaponController>().enabled = true;
         }
-
         else
         {
             menu.SetActive(true);
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
-            player.GetComponent<PlayerController>().enabled = false;
-            player.GetComponent<WeaponController>().enabled = false;
-            gameObject.GetComponent<Change_Ammo_UI>().enabled = false;
+            GameManager.Instance.player.GetComponent<PlayerController>().enabled = false;
+            GameManager.Instance.player.GetComponent<WeaponController>().enabled = false;
         }
     }
 }

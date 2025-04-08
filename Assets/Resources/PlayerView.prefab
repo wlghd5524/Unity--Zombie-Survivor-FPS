@@ -2050,7 +2050,7 @@ MonoBehaviour:
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
-  m_ActiveFontFeatures: 00000000
+  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
@@ -4329,7 +4329,7 @@ MonoBehaviour:
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
-  m_ActiveFontFeatures: 00000000
+  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
@@ -6021,7 +6021,7 @@ MonoBehaviour:
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
-  m_ActiveFontFeatures: 00000000
+  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
@@ -6444,7 +6444,7 @@ MonoBehaviour:
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
-  m_ActiveFontFeatures: 00000000
+  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
@@ -6804,7 +6804,7 @@ MonoBehaviour:
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
-  m_ActiveFontFeatures: 00000000
+  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
@@ -7237,7 +7237,6 @@ GameObject:
   - component: {fileID: 1624879612546354902}
   - component: {fileID: 45904437583751648}
   - component: {fileID: 5507870409250323089}
-  - component: {fileID: 1465230513013208096}
   - component: {fileID: 3450805295448586813}
   m_Layer: 5
   m_Name: PlayerView
@@ -7341,28 +7340,16 @@ MonoBehaviour:
   menu: {fileID: 0}
   gameManager: {fileID: 0}
   player: {fileID: 0}
-  HitDirections: {fileID: 0}
-  HitTakenEffect: {fileID: 0}
-  ImmortalityIndicator: {fileID: 0}
   HealthBar: {fileID: 0}
   healtext: {fileID: 0}
   Hp: {fileID: 0}
   HpNumber: {fileID: 0}
---- !u!114 &1465230513013208096
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8692919100491711447}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c10484fbdb01b834ea16bb37eff87f5a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  max_Ammo: {fileID: 7106410020386197350}
-  current_Ammo: {fileID: 8271132974370707566}
-  fill_Amount: {fileID: 6617139564923892271}
+  HitDirections: {fileID: 0}
+  HitTakenEffect: {fileID: 0}
+  ImmortalityIndicator: {fileID: 0}
+  max_Ammo: {fileID: 0}
+  current_Ammo: {fileID: 0}
+  fill_Amount: {fileID: 0}
 --- !u!114 &3450805295448586813
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7933,7 +7920,7 @@ MonoBehaviour:
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
-  m_ActiveFontFeatures: 00000000
+  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1

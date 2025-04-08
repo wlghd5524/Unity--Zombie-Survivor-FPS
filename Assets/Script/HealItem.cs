@@ -9,7 +9,7 @@ public class HealItem : MonoBehaviour
 
     private void Awake()
     {
-        //¼öÁ¤¿¹Á¤
+        //ìˆ˜ì •ì˜ˆì •
         medkit = transform.Find("Medkit_01_Prefab_01").gameObject;
     }
 
@@ -18,13 +18,13 @@ public class HealItem : MonoBehaviour
         if (!medkit.activeSelf)
             return;
 
-        if (collision.gameObject.CompareTag("Player")) // Ãæµ¹ÇÑ ¿ÀºêÁ§Æ®°¡ ÇÃ·¹ÀÌ¾îÀÎÁö È®ÀÎ
+        if (collision.gameObject.CompareTag("Player")) // ì¶©ëŒí•œ ì˜¤ë¸Œì íŠ¸ê°€ í”Œë ˆì´ì–´ì¸ì§€ í™•ì¸
         {
             player = collision.gameObject;
             _p = player.GetComponent<PlayerController>();
 
-            Debug.Log("ÀÀ±ŞÅ°Æ® ¿ÀºêÁ§Æ®¿Í ÇÃ·¹ÀÌ¾î Ãæµ¹");
-            CollisionFunction(); // Ãæµ¹ ½Ã ½ÇÇàÇÒ ÇÔ¼ö
+            Debug.Log("ì‘ê¸‰í‚¤íŠ¸ ì˜¤ë¸Œì íŠ¸ì™€ í”Œë ˆì´ì–´ ì¶©ëŒ");
+            CollisionFunction(); // ì¶©ëŒ ì‹œ ì‹¤í–‰í•  í•¨ìˆ˜
         }
     }
 
@@ -36,18 +36,18 @@ public class HealItem : MonoBehaviour
     }
 
     /// <summary>
-    /// 30ÃÊ°£ ºñÈ°¼ºÈ­
+    /// 30ì´ˆê°„ ë¹„í™œì„±í™”
     /// </summary>
     /// <returns></returns>
     IEnumerator DeactivateAndReactivate()
     {
-        // °´Ã¼ ºñÈ°¼ºÈ­
+        // ê°ì²´ ë¹„í™œì„±í™”
         medkit.SetActive(false);
 
-        // 30ÃÊ ´ë±â
+        // 30ì´ˆ ëŒ€ê¸°
         yield return new WaitForSeconds(5);
 
-        // °´Ã¼ ´Ù½Ã È°¼ºÈ­
+        // ê°ì²´ ë‹¤ì‹œ í™œì„±í™”
         medkit.SetActive(true);
     }
 }

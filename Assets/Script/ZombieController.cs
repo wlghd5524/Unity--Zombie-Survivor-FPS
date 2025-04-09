@@ -13,6 +13,8 @@ public class ZombieController : MonoBehaviourPunCallbacks, IPunObservable
     }
 
     ZombieStates state;
+    private readonly string ATTACK_STATE_NAME = "Z_Attack";
+    private bool hasDealtDamage = false; // 데미지 판정 여부를 체크하는 변수 추가
 
     private GameObject targetPlayer = null; // 가장 가까운 플레이어
     private Animator animator;
@@ -59,8 +61,9 @@ public class ZombieController : MonoBehaviourPunCallbacks, IPunObservable
             if (distance > 2.0f)
             {
                 state = ZombieStates.Walking;
-                //animator.SetBool("IsWalking", true);
                 photonView.RPC("SetAnimation", RpcTarget.All, "IsWalking", true);
+                agent.isStopped = false;
+                hasDealtDamage = false; // Walking 상태로 전환 시 데미지 판정 초기화
 
                 if (Vector3.Distance(lastTargetPosition, targetPlayer.transform.position) > 0.5f)
                 {
@@ -72,13 +75,19 @@ public class ZombieController : MonoBehaviourPunCallbacks, IPunObservable
             else
             {
                 state = ZombieStates.Attack;
-                //animator.SetTrigger("Attack");
                 photonView.RPC("SetAnimationTrigger", RpcTarget.All, "Attack");
+                agent.isStopped = true; // 공격 중 이동 정지
             }
 
             if (!IsLookingAtPlayer())
             {
                 RotateTowardsPlayer();
+            }
+
+            // 공격 상태일 때 타이밍 체크
+            if (state == ZombieStates.Attack)
+            {
+                CheckAttackHit();
             }
         }
         else
@@ -107,9 +116,40 @@ public class ZombieController : MonoBehaviourPunCallbacks, IPunObservable
         targetPlayer = closestPlayer;
     }
 
+    private void CheckAttackHit()
+    {
+        if (animator == null) return;
+
+        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+
+        // 공격 애니메이션이 끝났는지 체크
+        if (stateInfo.IsName(ATTACK_STATE_NAME) && stateInfo.normalizedTime >= 1.0f)
+        {
+            state = ZombieStates.Walking;
+            agent.isStopped = false;
+            hasDealtDamage = false; // 다음 공격을 위해 초기화
+            return;
+        }
+
+        // 아직 데미지를 주지 않았고, 애니메이션이 40~60% 구간일 때만 공격
+        if (!hasDealtDamage && 
+            stateInfo.IsName(ATTACK_STATE_NAME) && 
+            stateInfo.normalizedTime >= 0.4f && 
+            stateInfo.normalizedTime <= 0.6f)
+        {
+            Attack();
+            hasDealtDamage = true; // 데미지를 준 후 플래그 설정
+        }
+    }
+
     public void Attack()
     {
         if (targetPlayer == null) return;
+        
+        // 실제 공격 시점에서 거리를 다시 체크
+        float currentDistance = Vector3.Distance(transform.position, targetPlayer.transform.position);
+        if (currentDistance > 2.0f) return; // 공격 범위를 벗어났다면 공격하지 않음
+        
         playerController = targetPlayer.GetComponent<PlayerController>();
         if (playerController != null)
         {
@@ -120,13 +160,16 @@ public class ZombieController : MonoBehaviourPunCallbacks, IPunObservable
     private void Die()
     {
         if (state == ZombieStates.Die) return;
-        //animator.SetBool("Dead", true);
         photonView.RPC("SetAnimationTrigger", RpcTarget.All, "Dead");
         state = ZombieStates.Die;
         Rigidbody rd = GetComponent<Rigidbody>();
         if (rd != null) rd.isKinematic = true;
         if (agent != null) agent.isStopped = true;
-
+        
+        // Medkit 생성 위치 설정 (좀비 위치에서 y축으로 1 위)
+        Vector3 spawnPosition = transform.position + Vector3.up;
+        PhotonNetwork.Instantiate("Medkit", spawnPosition, transform.rotation);
+        
         StartCoroutine(DestroyAfterAnimation());
     }
 

@@ -1,53 +1,20 @@
 using UnityEngine;
 using System.Collections;
+using Photon.Pun;
 public class HealItem : MonoBehaviour
 {
-    PlayerController _p;
-    GameObject player;
-    GameObject medkit;
-    float player_hp;
-
-    private void Awake()
+    public float rotationSpeed = 90f;
+    private void Update()
     {
-        //수정예정
-        medkit = transform.Find("Medkit_01_Prefab_01").gameObject;
+        transform.Rotate(0f, rotationSpeed * Time.deltaTime, 0f);
     }
-
-    void OnCollisionEnter(Collision collision)
+    void OnTriggerEnter(Collider other)
     {
-        if (!medkit.activeSelf)
-            return;
-
-        if (collision.gameObject.CompareTag("Player")) // 충돌한 오브젝트가 플레이어인지 확인
+        if (other.gameObject.CompareTag("Player")) // 충돌한 오브젝트가 플레이어인지 확인
         {
-            player = collision.gameObject;
-            _p = player.GetComponent<PlayerController>();
-
+            other.gameObject.GetComponent<PlayerController>().Heal();
+            PhotonNetwork.Destroy(gameObject);
             Debug.Log("응급키트 오브젝트와 플레이어 충돌");
-            CollisionFunction(); // 충돌 시 실행할 함수
         }
-    }
-
-    void CollisionFunction()
-    {
-        player.GetComponent<PlayerController>().Heal();
-
-        StartCoroutine(DeactivateAndReactivate());
-    }
-
-    /// <summary>
-    /// 30초간 비활성화
-    /// </summary>
-    /// <returns></returns>
-    IEnumerator DeactivateAndReactivate()
-    {
-        // 객체 비활성화
-        medkit.SetActive(false);
-
-        // 30초 대기
-        yield return new WaitForSeconds(5);
-
-        // 객체 다시 활성화
-        medkit.SetActive(true);
     }
 }

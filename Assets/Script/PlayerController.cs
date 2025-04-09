@@ -38,8 +38,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
     public float max_hp = 100.0f;
     public float min_hp = 0.0f;
 
-    GameObject playerView;
-    PlayerView pv;
+    PlayerView playerView;
 
     private void Awake()
     {
@@ -50,9 +49,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
         animator = GetComponent<Animator>();
 
         if (playerView == null)
-            playerView = GameObject.Find("PlayerView");
-
-        pv = playerView.GetComponent<PlayerView>();
+            playerView = GameObject.Find("PlayerView").GetComponent<PlayerView>();
 
         if (photonView.IsMine)
         {
@@ -121,7 +118,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
             return;
 
         if(context.canceled)
-            pv.Active_Menu();
+            playerView.Active_Menu();
 
     }
     // 물리 기반 이동 및 중력 처리는 FixedUpdate에서 실행합니다.
@@ -215,7 +212,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
         else
             current_hp = 100;
 
-        pv.Heal(current_hp, before_hp, max_hp);
+        playerView.Heal(current_hp, before_hp, max_hp);
     }
     /// <summary>
     /// 대미지기능
@@ -231,13 +228,13 @@ public class PlayerController : MonoBehaviourPunCallbacks
         if (current_hp <= min_hp)
             Dead();
 
-        pv.Damage(current_hp);
+        playerView.Damage(current_hp);
     }
     /// <summary>
     /// 사망함수
     /// </summary>
     private void Dead()
     {
-        pv.Dead();
+        playerView.Dead();
     }
 }

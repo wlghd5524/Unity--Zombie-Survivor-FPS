@@ -47,7 +47,7 @@ public class WeaponController : MonoBehaviourPunCallbacks
     /// </summary>
     public void OnFire(InputAction.CallbackContext context)
     {
-        if (!photonView.IsMine)
+        if (!photonView.IsMine || !remoteAnimator.GetBool("IsAlive"))
             return;
 
         if (isReloading)
@@ -74,7 +74,7 @@ public class WeaponController : MonoBehaviourPunCallbacks
     /// </summary>
     public void OnReload(InputAction.CallbackContext context)
     {
-        if (!photonView.IsMine)
+        if (!photonView.IsMine || !remoteAnimator.GetBool("IsAlive"))
             return;
 
         if (playerView.menu.activeSelf)

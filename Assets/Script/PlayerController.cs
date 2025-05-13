@@ -19,11 +19,15 @@ public class PlayerController : MonoBehaviourPunCallbacks
     [Tooltip("마우스 감도")]
     public float lookSensitivity = 1f;
     [Tooltip("카메라의 수직 회전 제한 (각도)")]
-    public float verticalRotationLimit = 80f;
+    public float verticalRotationLimit = 80f;    
 
     [Header("Camera Reference")]
-    [Tooltip("플레이어 자식에 배치한 FPS 카메라의 Transform")]
-    public Transform cameraTransform;
+    [Tooltip("Camera Handle Transform")]
+    public Transform CameraHandle;
+    [Tooltip("플레이어 자식에 배치한 카메라의 게임 오브젝트")]
+    public GameObject FPSCamera;
+    public GameObject TPSCamera;
+
 
     // 내부에서 저장할 입력 값
     private Vector2 moveInput;
@@ -47,6 +51,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
         rb.freezeRotation = true;
 
         animator = GetComponent<Animator>();
+        animator.SetInteger("WeaponID", 0);
 
         if (playerView == null)
             playerView = GameObject.Find("PlayerView").GetComponent<PlayerView>();
@@ -59,14 +64,16 @@ public class PlayerController : MonoBehaviourPunCallbacks
         }
         else
         {
-            if (cameraTransform != null)
+            if (CameraHandle != null)
             {
-                cameraTransform.gameObject.SetActive(false);
+                CameraHandle.gameObject.SetActive(false);
 
                 // 원격 플레이어일 경우, LocalPlayer 레이어를 RemotePlayer 레이어로 변경
                 ChangeLayerRecursively(transform, LayerMask.NameToLayer("LocalPlayer"), LayerMask.NameToLayer("RemotePlayer"));
             }
         }
+        TPSCamera.SetActive(false);
+        FPSCamera.SetActive(true);
     }
 
     // Player Input 컴포넌트가 Send Messages 혹은 Unity Events로 호출할 때 실행되는 메서드들
@@ -76,7 +83,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
     /// </summary>
     public void OnMove(InputAction.CallbackContext context)
     {
-        if (!photonView.IsMine)
+        if (!photonView.IsMine || !animator.GetBool("IsAlive"))
             return;
         if (context.performed)
             moveInput = context.ReadValue<Vector2>();
@@ -102,7 +109,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
     /// </summary>
     public void OnJump(InputAction.CallbackContext context)
     {
-        if (!photonView.IsMine)
+        if (!photonView.IsMine || !animator.GetBool("IsAlive"))
             return;
         // 점프 입력이 performed 상태이고, 바닥에 닿아 있을 때만 점프 처리
         if (context.performed && IsGrounded())
@@ -124,7 +131,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
     // 물리 기반 이동 및 중력 처리는 FixedUpdate에서 실행합니다.
     private void FixedUpdate()
     {
-        if (!photonView.IsMine)
+        if (!photonView.IsMine || !animator.GetBool("IsAlive"))
             return;
         HandleMovement();
         UpdateAnimation();
@@ -133,7 +140,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
     // 회전(시점) 처리는 Update에서 실행합니다.
     private void Update()
     {
-        if (!photonView.IsMine)
+        if (!photonView.IsMine || !animator.GetBool("IsAlive"))
             return;
         HandleLook();
     }
@@ -165,9 +172,9 @@ public class PlayerController : MonoBehaviourPunCallbacks
         verticalRotation -= lookInput.y * lookSensitivity;
         verticalRotation = Mathf.Clamp(verticalRotation, -verticalRotationLimit, verticalRotationLimit);
 
-        if (cameraTransform != null)
+        if (CameraHandle != null)
         {
-            cameraTransform.localRotation = Quaternion.Euler(verticalRotation, 0f, 0f);
+            CameraHandle.localRotation = Quaternion.Euler(verticalRotation, 0f, 0f);
         }
 
         animator.SetFloat("Look", -verticalRotation / 90f);
@@ -199,6 +206,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
             ChangeLayerRecursively(child, targetLayer, newLayer);
         }
     }
+
     /// <summary>
     /// 회복기능
     /// </summary>
@@ -220,15 +228,17 @@ public class PlayerController : MonoBehaviourPunCallbacks
     /// <param name="damage"></param>
     public void Damage(float damage)
     {
-        if (current_hp > max_hp)
+        if(current_hp <= 0) {
             return;
-
+        }
         current_hp -= damage;
-
-        if (current_hp <= min_hp)
-            Dead();
-
         playerView.Damage(current_hp);
+        if (current_hp <= min_hp)
+        {
+            current_hp = min_hp;
+            Dead();
+        }
+        
     }
     /// <summary>
     /// 사망함수
@@ -236,5 +246,22 @@ public class PlayerController : MonoBehaviourPunCallbacks
     private void Dead()
     {
         playerView.Dead();
+        animator.SetBool("IsAlive", false);
+
+        // 메인 카메라의 Culling Mask 변경
+        Camera mainCamera = Camera.main;
+        if (mainCamera != null)
+        {
+            // LocalPlayer 레이어를 보이게 설정
+            int localPlayerLayer = LayerMask.NameToLayer("LocalPlayer");
+            mainCamera.cullingMask |= (1 << localPlayerLayer);
+            
+            // FirstPersonView 레이어를 안 보이게 설정
+            int firstPersonViewLayer = LayerMask.NameToLayer("FirstPersonView");
+            mainCamera.cullingMask &= ~(1 << firstPersonViewLayer);
+        }
+ 
+        TPSCamera.SetActive(true);
+        FPSCamera.SetActive(false);
     }
 }

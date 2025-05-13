@@ -202,9 +202,68 @@ public class ZombieController : MonoBehaviourPunCallbacks, IPunObservable
     {
         if (!PhotonNetwork.IsMasterClient) return;
         health -= damage;
+        
+        // 넉백 효과 추가 - 플레이어 방향의 반대 방향으로 밀림
+        if (targetPlayer != null)
+        {
+            // 좀비에서 플레이어 방향으로의 벡터 계산 (이 반대 방향으로 밀릴 것)
+            Vector3 hitDirection = (transform.position - targetPlayer.transform.position).normalized;
+            ApplyKnockback(hitDirection, 10.0f);
+        }
+        
         if (health <= 0)
         {
             Die();
+        }
+    }
+
+    // 넉백 효과를 적용하는 함수
+    private void ApplyKnockback(Vector3 hitDirection, float knockbackForce)
+    {
+        // NavMeshAgent 일시 중지
+        if (agent != null && agent.enabled)
+        {
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero;
+        }
+        
+        // Rigidbody를 통해 물리적 힘 적용
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            // 지면과 평행하게 힘을 적용하기 위해 y값을 0으로 설정
+            hitDirection.y = 0;
+            hitDirection = hitDirection.normalized;
+            
+            // 물리 시뮬레이션을 위해 kinematic 상태 해제
+            bool wasKinematic = rb.isKinematic;
+            rb.isKinematic = false;
+            
+            // 힘 적용
+            rb.AddForce(hitDirection * knockbackForce, ForceMode.Impulse);
+            
+            // 일정 시간 후 NavMeshAgent 다시 활성화
+            StartCoroutine(ResetAfterKnockback(wasKinematic));
+        }
+    }
+
+    // 넉백 후 원래 상태로 복구
+    private IEnumerator ResetAfterKnockback(bool wasKinematic)
+    {
+        // 0.5초 후 NavMeshAgent 다시 활성화
+        yield return new WaitForSeconds(0.5f);
+        
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.isKinematic = wasKinematic;
+        }
+        
+        if (agent != null && agent.enabled && state != ZombieStates.Die)
+        {
+            agent.isStopped = false;
+            agent.velocity = Vector3.zero;
         }
     }
 

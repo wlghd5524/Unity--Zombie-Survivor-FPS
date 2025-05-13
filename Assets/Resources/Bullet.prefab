@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 655797452307760888}
   - component: {fileID: 1943230853753832667}
   - component: {fileID: 3868554056839746528}
-  - component: {fileID: 940532878098038896}
   - component: {fileID: 8140792800889195643}
+  - component: {fileID: 940532878098038896}
   - component: {fileID: 5950353072492327274}
   - component: {fileID: -9211398025767121168}
   - component: {fileID: -7158461327078069826}
@@ -113,23 +113,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &940532878098038896
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4782984894998028250}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 891b7ec0a024660409589bb38ec8ba96, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 50
-  maxDistance: 100
-  lifetime: 3
-  shootDirection: {x: 0, y: 0, z: 0}
-  weaponController: {fileID: 0}
 --- !u!54 &8140792800889195643
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -156,7 +139,24 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 3
+--- !u!114 &940532878098038896
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4782984894998028250}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 891b7ec0a024660409589bb38ec8ba96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 50
+  maxDistance: 100
+  lifetime: 3
+  shootDirection: {x: 0, y: 0, z: 0}
+  weaponController: {fileID: 0}
 --- !u!96 &5950353072492327274
 TrailRenderer:
   serializedVersion: 3

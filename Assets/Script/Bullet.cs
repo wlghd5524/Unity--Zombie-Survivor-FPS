@@ -31,7 +31,15 @@ public class Bullet : MonoBehaviourPunCallbacks
         ZombieController zombie = collision.gameObject.GetComponent<ZombieController>();
         if (zombie != null)
         {
-            zombie.Damage(25f);
+            Debug.Log(collision.gameObject.name + " 충돌");
+            if(collision.gameObject.name == "Z_Head")
+            {
+                zombie.Damage(50f, true);
+            }
+            else
+            {
+                zombie.Damage(25f);
+            }
             Debug.Log("남은 좀비 체력 : " + zombie.health);
         }
         if(photonView.IsMine)

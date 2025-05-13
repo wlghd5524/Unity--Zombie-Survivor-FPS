@@ -198,17 +198,23 @@ public class ZombieController : MonoBehaviourPunCallbacks, IPunObservable
         transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, agent.angularSpeed * Time.deltaTime);
     }
 
-    public void Damage(float damage)
+    public void Damage(float damage, bool isHeadshot = false)
     {
         if (!PhotonNetwork.IsMasterClient) return;
-        health -= damage;
+        
+        // 헤드샷일 경우 대미지 2배 적용
+        float finalDamage = isHeadshot ? damage * 2f : damage;
+        health -= finalDamage;
         
         // 넉백 효과 추가 - 플레이어 방향의 반대 방향으로 밀림
         if (targetPlayer != null)
         {
             // 좀비에서 플레이어 방향으로의 벡터 계산 (이 반대 방향으로 밀릴 것)
             Vector3 hitDirection = (transform.position - targetPlayer.transform.position).normalized;
-            ApplyKnockback(hitDirection, 10.0f);
+            
+            // 헤드샷일 경우 더 강한 넉백 적용
+            float knockbackForce = isHeadshot ? 15.0f : 10.0f;
+            ApplyKnockback(hitDirection, knockbackForce);
         }
         
         if (health <= 0)
@@ -254,7 +260,7 @@ public class ZombieController : MonoBehaviourPunCallbacks, IPunObservable
         yield return new WaitForSeconds(0.5f);
         
         Rigidbody rb = GetComponent<Rigidbody>();
-        if (rb != null)
+        if (rb != null && rb.isKinematic == false)
         {
             rb.linearVelocity = Vector3.zero;
             rb.isKinematic = wasKinematic;

@@ -51,7 +51,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
         rb.freezeRotation = true;
 
         animator = GetComponent<Animator>();
-        animator.SetInteger("WeaponID", 0);
+        animator.SetFloat("WeaponID", 0);
 
         if (playerView == null)
             playerView = GameObject.Find("PlayerView").GetComponent<PlayerView>();

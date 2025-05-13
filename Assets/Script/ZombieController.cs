@@ -203,7 +203,7 @@ public class ZombieController : MonoBehaviourPunCallbacks, IPunObservable
         if (!PhotonNetwork.IsMasterClient) return;
         
         // 헤드샷일 경우 대미지 2배 적용
-        float finalDamage = isHeadshot ? damage * 2f : damage;
+        float finalDamage = isHeadshot ? damage * 4.0f : damage;
         health -= finalDamage;
         
         // 넉백 효과 추가 - 플레이어 방향의 반대 방향으로 밀림

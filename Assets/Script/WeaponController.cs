@@ -15,7 +15,7 @@ public class WeaponController : MonoBehaviourPunCallbacks
     [Tooltip("총 발사 사거리")]
     public float range = 100f;
     [Tooltip("한 발당 데미지")]
-    public float damage = 50f;
+    public float damage = 25.0f;
 
     public int currentAmmo = 7;
     public int maxAmmo = 7;
@@ -107,7 +107,6 @@ public class WeaponController : MonoBehaviourPunCallbacks
 
         RaycastHit hit;
         Vector3 targetPoint;
-
         if (Physics.Raycast(rayOrigin, rayDirection, out hit, 1000f))
         {
             targetPoint = hit.point;  // 충돌 지점이 있다면, 그곳을 타겟으로 지정

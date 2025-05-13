@@ -1105,7 +1105,7 @@ MonoBehaviour:
   remoteAnimator: {fileID: 874642801826453360}
   fpsCamera: {fileID: 0}
   range: 100
-  damage: 50
+  damage: 25
   currentAmmo: 7
   maxAmmo: 7
   bulletPrefab: {fileID: 4782984894998028250, guid: 58ef27be5564d50488a199e5e39f6c6d, type: 3}

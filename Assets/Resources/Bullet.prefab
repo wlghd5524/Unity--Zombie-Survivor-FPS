@@ -157,6 +157,7 @@ MonoBehaviour:
   lifetime: 3
   shootDirection: {x: 0, y: 0, z: 0}
   weaponController: {fileID: 0}
+  isHeadshot: 0
 --- !u!96 &5950353072492327274
 TrailRenderer:
   serializedVersion: 3
